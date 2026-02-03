@@ -633,39 +633,37 @@
                     </div>
 
                     <!-- Summary -->
-                    <div class="grid grid-cols-4 gap-4 mb-6">
-                        <div class="mini-card">
-                            <p class="text-2xl font-bold text-blue-600" id="s8_total">0</p>
-                            <p class="text-xs text-gray-600">총 처리 건수</p>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="mini-card border-l-4 border-green-500">
+                            <p class="text-2xl font-bold text-green-600" id="s8_excellent">0</p>
+                            <p class="text-xs text-gray-600">🟢 우수</p>
+                            <p class="text-xs text-green-500">견적 ≤ 예정가</p>
                         </div>
-                        <div class="mini-card">
-                            <p class="text-2xl font-bold text-green-600" id="s8_auto">0</p>
-                            <p class="text-xs text-gray-600">자동완료</p>
-                            <p class="text-xs text-green-500" id="s8_autoRate">0%</p>
+                        <div class="mini-card border-l-4 border-yellow-500">
+                            <p class="text-2xl font-bold text-yellow-600" id="s8_normal">0</p>
+                            <p class="text-xs text-gray-600">🟡 보통</p>
+                            <p class="text-xs text-yellow-500">예정가 < 견적 ≤ 최근발주가</p>
                         </div>
-                        <div class="mini-card">
-                            <p class="text-2xl font-bold text-orange-600" id="s8_hitl">0</p>
-                            <p class="text-xs text-gray-600">HITL</p>
-                            <p class="text-xs text-orange-500" id="s8_hitlRate">0%</p>
-                        </div>
-                        <div class="mini-card">
-                            <p class="text-2xl font-bold text-purple-600" id="s8_llmCalls">0</p>
-                            <p class="text-xs text-gray-600">LLM 호출</p>
+                        <div class="mini-card border-l-4 border-red-500">
+                            <p class="text-2xl font-bold text-red-600" id="s8_poor">0</p>
+                            <p class="text-xs text-gray-600">🔴 열위</p>
+                            <p class="text-xs text-red-500">견적 > 예정가 & 최근발주가</p>
                         </div>
                     </div>
 
                     <!-- Comparison Table -->
                     <div class="mb-4">
-                        <h3 class="font-medium mb-2">🏆 견적 비교 (최저가 선정)</h3>
-                        <div class="border rounded max-h-64 overflow-y-auto">
+                        <h3 class="font-medium mb-2">🏆 견적 경쟁력 분석</h3>
+                        <div class="border rounded max-h-72 overflow-y-auto">
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
                                         <th class="px-3 py-2 text-left">PR번호</th>
                                         <th class="px-3 py-2 text-left">선정업체</th>
-                                        <th class="px-3 py-2 text-right">최저가</th>
-                                        <th class="px-3 py-2 text-right">예정가대비</th>
-                                        <th class="px-3 py-2 text-left">적정성</th>
+                                        <th class="px-3 py-2 text-right">견적단가</th>
+                                        <th class="px-3 py-2 text-right">예정단가</th>
+                                        <th class="px-3 py-2 text-right">최근발주단가</th>
+                                        <th class="px-3 py-2 text-center">경쟁력</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s8_comparisonList"></tbody>
@@ -1661,30 +1659,63 @@
             if (!processingResults) return;
             const summary = processingResults.summary;
             
-            document.getElementById('s8_total').textContent = summary.total;
-            document.getElementById('s8_auto').textContent = summary.autoComplete;
-            document.getElementById('s8_hitl').textContent = summary.needReview;
-            document.getElementById('s8_llmCalls').textContent = summary.llmCalls;
-            document.getElementById('s8_autoRate').textContent = summary.total > 0 ? `${((summary.autoComplete / summary.total) * 100).toFixed(1)}%` : '0%';
-            document.getElementById('s8_hitlRate').textContent = summary.total > 0 ? `${((summary.needReview / summary.total) * 100).toFixed(1)}%` : '0%';
             document.getElementById('s8_time').textContent = summary.processingTime || '0';
             document.getElementById('s8_tokens').textContent = (summary.llmCalls * 1200).toLocaleString();
             
-            document.getElementById('s8_comparisonList').innerHTML = quotationData.slice(0, 30).map(pr => {
+            // 견적 경쟁력 계산
+            let excellent = 0, normal = 0, poor = 0;
+            
+            const comparisonData = quotationData.map(pr => {
                 const quoteStatus = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0 };
-                const lowestPrice = quoteStatus.status === 'received' ? quoteStatus.amount : pr['입찰예정가'] || 0;
-                const estimatedPrice = pr['입찰예정가'] || 0;
-                const ratio = estimatedPrice > 0 ? ((lowestPrice / estimatedPrice - 1) * 100).toFixed(1) : 0;
-                const isGood = ratio <= 0;
+                // 견적단가: Mock 수신된 가격 또는 예정가의 85~105% 랜덤
+                const quotePrice = quoteStatus.status === 'received' ? quoteStatus.amount : 
+                    Math.round((pr['입찰예정가'] || 0) * (0.85 + Math.random() * 0.2));
+                const estimatedPrice = pr['입찰예정가'] || 0;  // 예정단가
+                const recentOrderPrice = pr['최근발주단가'] || 0;  // 최근발주단가
+                
+                // 경쟁력 판단
+                let competitiveness, signal, bgClass;
+                if (quotePrice <= estimatedPrice) {
+                    // 견적단가 ≤ 예정단가: 우수
+                    competitiveness = '우수';
+                    signal = '🟢';
+                    bgClass = 'bg-green-100 text-green-800';
+                    excellent++;
+                } else if (recentOrderPrice > 0 && quotePrice <= recentOrderPrice) {
+                    // 예정단가 < 견적단가 ≤ 최근발주단가: 보통
+                    competitiveness = '보통';
+                    signal = '🟡';
+                    bgClass = 'bg-yellow-100 text-yellow-800';
+                    normal++;
+                } else {
+                    // 견적단가 > 예정단가 & 최근발주단가: 열위
+                    competitiveness = '열위';
+                    signal = '🔴';
+                    bgClass = 'bg-red-100 text-red-800';
+                    poor++;
+                }
+                
+                return { pr, quotePrice, estimatedPrice, recentOrderPrice, competitiveness, signal, bgClass };
+            });
+            
+            // 요약 카드 업데이트
+            document.getElementById('s8_excellent').textContent = excellent;
+            document.getElementById('s8_normal').textContent = normal;
+            document.getElementById('s8_poor').textContent = poor;
+            
+            // 테이블 렌더링
+            document.getElementById('s8_comparisonList').innerHTML = comparisonData.slice(0, 50).map(item => {
+                const { pr, quotePrice, estimatedPrice, recentOrderPrice, competitiveness, signal, bgClass } = item;
                 
                 return `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
                         <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
-                        <td class="px-3 py-2 text-right">₩${lowestPrice.toLocaleString()}</td>
-                        <td class="px-3 py-2 text-right ${isGood ? 'text-green-600' : 'text-red-600'}">${ratio > 0 ? '+' : ''}${ratio}%</td>
-                        <td class="px-3 py-2">
-                            <span class="px-1 py-0.5 rounded text-xs ${isGood ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">${isGood ? '✅ 적정' : '⚠️ 검토'}</span>
+                        <td class="px-3 py-2 text-right font-medium">₩${quotePrice.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-right">₩${estimatedPrice.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-right">${recentOrderPrice > 0 ? '₩' + recentOrderPrice.toLocaleString() : '-'}</td>
+                        <td class="px-3 py-2 text-center">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${bgClass}">${signal} ${competitiveness}</span>
                         </td>
                     </tr>
                 `;
