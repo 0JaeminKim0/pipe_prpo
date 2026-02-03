@@ -1240,7 +1240,7 @@
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div><span class="text-gray-500">입찰목적물</span><p class="font-medium">${pr['내역'] || '-'}</p></div>
                             <div><span class="text-gray-500">소싱그룹</span><p class="font-medium">${pr['소싱그룹'] || '-'}</p></div>
-                            <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매요청자'] || '-'}</p></div>
+                            <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매원'] || pr['구매요청자'] || '-'}</p></div>
                             <div><span class="text-gray-500">시리즈호선</span><p class="font-medium">${(pr['자재번호'] || '').substring(0, 4)}</p></div>
                             <div><span class="text-gray-500">일반/긴급</span><p class="font-medium">${pr['긴급도_신호'] || ''} ${pr['긴급도'] || '-'}</p></div>
                         </div>
