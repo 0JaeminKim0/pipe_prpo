@@ -1240,7 +1240,7 @@
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div><span class="text-gray-500">입찰목적물</span><p class="font-medium">${pr['내역'] || '-'}</p></div>
                             <div><span class="text-gray-500">소싱그룹</span><p class="font-medium">${pr['소싱그룹'] || '-'}</p></div>
-                            <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매원'] || pr['구매요청자'] || '-'}</p></div>
+                            <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매원'] || '-'}</p></div>
                             <div><span class="text-gray-500">시리즈호선</span><p class="font-medium">${(pr['자재번호'] || '').substring(0, 4)}</p></div>
                             <div><span class="text-gray-500">일반/긴급</span><p class="font-medium">${pr['긴급도_신호'] || ''} ${pr['긴급도'] || '-'}</p></div>
                         </div>
@@ -1271,7 +1271,7 @@
                     <!-- 금액정보 -->
                     <div class="bg-blue-50 rounded-lg p-4">
                         <h4 class="font-medium text-sm text-gray-700 mb-3">금액정보</h4>
-                        <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="grid grid-cols-4 gap-4 text-center">
                             <div>
                                 <p class="text-xs text-gray-500">입찰예정가</p>
                                 <p class="text-lg font-bold text-blue-600">₩${estimatedPrice.toLocaleString()}</p>
@@ -1282,8 +1282,12 @@
                                 <p class="text-lg font-bold">₩${estimatedPrice.toLocaleString()}</p>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-500">총중량</p>
-                                <p class="text-lg font-bold">${pr['요청수량'] || 0} ${pr['UOM'] || 'EA'}</p>
+                                <p class="text-xs text-gray-500">요청수량</p>
+                                <p class="text-lg font-bold">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">총중량(KG)</p>
+                                <p class="text-lg font-bold">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p>
                             </div>
                         </div>
                     </div>

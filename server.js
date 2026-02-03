@@ -651,6 +651,7 @@ async function processAgent() {
       row['매칭업체명'] = match['업체명'];
       row['매칭발주수량'] = match['발주수량'];
       row['매칭발주금액'] = match['발주금액(KRW)-변환'];
+      row['매칭_발주중량'] = match['발주중량'] || match['중량'] || match['총중량'] || match['발주수량'];
       row['업체매칭여부'] = true;
       matchedCount++;
     } else {
