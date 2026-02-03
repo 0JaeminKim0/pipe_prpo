@@ -43,28 +43,28 @@
         <div class="bg-white border-b">
             <div class="max-w-7xl mx-auto px-4 py-6">
                 <div class="flex items-center justify-center space-x-4">
-                    <div class="step-item flex items-center" data-step="1">
+                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="1" onclick="navigateToStep(1)">
                         <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-active">
                             <i class="fas fa-upload"></i>
                         </div>
                         <span class="ml-2 text-sm font-medium">PR 업로드</span>
                     </div>
                     <div class="w-12 h-1 bg-gray-300 step-line" data-line="1"></div>
-                    <div class="step-item flex items-center" data-step="2">
+                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="2" onclick="navigateToStep(2)">
                         <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
                             <i class="fas fa-robot"></i>
                         </div>
                         <span class="ml-2 text-sm font-medium">AI 처리</span>
                     </div>
                     <div class="w-12 h-1 bg-gray-300 step-line" data-line="2"></div>
-                    <div class="step-item flex items-center" data-step="3">
+                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="3" onclick="navigateToStep(3)">
                         <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
                             <i class="fas fa-file-alt"></i>
                         </div>
                         <span class="ml-2 text-sm font-medium">견적의뢰</span>
                     </div>
                     <div class="w-12 h-1 bg-gray-300 step-line" data-line="3"></div>
-                    <div class="step-item flex items-center" data-step="4">
+                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="4" onclick="navigateToStep(4)">
                         <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
                             <i class="fas fa-check-circle"></i>
                         </div>
@@ -906,6 +906,9 @@
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step2-1').classList.remove('hidden');
             
+            // AI 처리 완료 - 최대 도달 단계를 4로 설정 (모든 단계 이동 가능)
+            maxReachedStep = 4;
+            
             // Populate results
             populateResultsTabs();
         }
@@ -1082,7 +1085,34 @@
             }
         }
 
-        // Step Navigation
+        // Step Navigation - Click on header steps
+        let maxReachedStep = 1; // 도달한 최대 단계 추적
+        
+        function navigateToStep(step) {
+            // 아직 처리가 안된 단계로는 이동 불가
+            if (step > maxReachedStep) {
+                if (step === 2 && !processingResults) {
+                    alert('먼저 PR 데이터를 업로드하고 AI 처리를 시작하세요.');
+                    return;
+                }
+                if (step === 3 && !processingResults) {
+                    alert('먼저 AI 처리를 완료하세요.');
+                    return;
+                }
+                if (step === 4 && !processingResults) {
+                    alert('먼저 AI 처리를 완료하세요.');
+                    return;
+                }
+            }
+            
+            // AI 처리 단계(2)를 클릭하면 결과 화면(2-1)으로 이동
+            if (step === 2 && processingResults) {
+                goToStep('2-1');
+            } else {
+                goToStep(step);
+            }
+        }
+        
         function goToStep(step) {
             currentStep = step;
             
