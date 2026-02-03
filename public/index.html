@@ -391,11 +391,19 @@
                                 <p class="text-xs text-gray-600">⚠️ 신규업체필요</p>
                             </div>
                         </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="text" id="s3_supplierSearch" placeholder="검색 (PR번호, 자재번호, 자재내역...)" 
+                                class="flex-1 text-xs border rounded px-2 py-1" oninput="filterSupplierList(s3SupplierFilter)">
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" id="s3_pzafOnly" class="mr-1" onchange="filterSupplierList(s3SupplierFilter)">
+                                PZAF만
+                            </label>
+                        </div>
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs text-gray-500">클릭하여 필터링 | <button onclick="filterSupplierList('all')" class="text-blue-600 hover:underline">전체보기</button></span>
                             <span class="text-xs text-gray-400" id="s3_supplierCount">0건</span>
                         </div>
-                        <div class="border rounded max-h-64 overflow-y-auto">
+                        <div class="border rounded max-h-56 overflow-y-auto">
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
@@ -1231,6 +1239,7 @@
             let filtered = [...data];
             let filterLabel = '';
             
+            // 카드 필터링
             if (filterType === 'matched') {
                 filtered = data.filter(pr => pr['업체매칭여부']);
                 document.getElementById('card_matched')?.classList.add('ring-2', 'ring-green-500');
@@ -1239,6 +1248,24 @@
                 filtered = data.filter(pr => !pr['업체매칭여부']);
                 document.getElementById('card_unmatched')?.classList.add('ring-2', 'ring-red-500');
                 filterLabel = '(신규업체필요)';
+            }
+            
+            // PZAF 필터링
+            const pzafOnly = document.getElementById('s3_pzafOnly')?.checked;
+            if (pzafOnly) {
+                filtered = filtered.filter(pr => pr['PZAF여부'] || (pr['자재번호'] && pr['자재번호'].includes('PZAF')));
+                filterLabel += ' PZAF';
+            }
+            
+            // 검색 필터링
+            const searchTerm = (document.getElementById('s3_supplierSearch')?.value || '').toLowerCase().trim();
+            if (searchTerm) {
+                filtered = filtered.filter(pr => 
+                    (pr['구매요청'] || '').toLowerCase().includes(searchTerm) ||
+                    (pr['자재번호'] || '').toLowerCase().includes(searchTerm) ||
+                    (pr['자재내역'] || '').toLowerCase().includes(searchTerm) ||
+                    (pr['매칭업체명'] || '').toLowerCase().includes(searchTerm)
+                );
             }
             
             document.getElementById('s3_supplierFilter').textContent = filterLabel;
