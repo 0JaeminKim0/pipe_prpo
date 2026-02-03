@@ -515,6 +515,7 @@ async function processAgent() {
   const startTime = Date.now();
   let workingData = [...globalState.prData];
   const poHistory = [...globalState.poHistory];
+  let allPRData = [];  // 전체 PR 데이터 보관용 (Step 1~3용)
   
   // Create material key (remove ship number prefix)
   workingData.forEach(row => {
@@ -585,6 +586,7 @@ async function processAgent() {
   }
 
   workingData = validData;
+  allPRData = [...validData];  // 전체 유효 PR 데이터 저장 (PZAF 필터링 전)
 
   // Step 3: Contract Classification
   updateStatus(3, '계약 분류');
@@ -910,6 +912,8 @@ async function processAgent() {
   return {
     summary: {
       total: quotationData.length,
+      totalPR: workingData.length,
+      pzafCount: pzafData.length,
       urgent: urgencySummary.urgent,
       normal: urgencySummary.normal,
       flexible: urgencySummary.flexible,
@@ -920,7 +924,8 @@ async function processAgent() {
       llmCalls: llmCallCount,
       processingTime: ((Date.now() - startTime) / 1000).toFixed(2)
     },
-    quotationData,
+    allPRData,    // 전체 PR 데이터 (Step 1~3용)
+    quotationData,              // PZAF 필터링된 견적 데이터 (Step 4~8용)
     invalidPR: invalidData,
     emailLogs: globalState.emailLogs,
     llmLogs: globalState.llmLogs

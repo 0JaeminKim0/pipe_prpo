@@ -1029,15 +1029,26 @@
         
         function populateStep2() {
             if (!processingResults) return;
-            const summary = processingResults.summary;
-            const cs = summary.contractSummary || {};
             
-            document.getElementById('s2_standard').textContent = (cs.standard || 0).toLocaleString();
-            document.getElementById('s2_nonStandard').textContent = (cs.nonStandard || 0).toLocaleString();
-            document.getElementById('s2_na').textContent = (cs.na || 0).toLocaleString();
-            document.getElementById('s2_urgent').textContent = (summary.urgent || 0).toLocaleString();
-            document.getElementById('s2_normal').textContent = (summary.normal || 0).toLocaleString();
-            document.getElementById('s2_flexible').textContent = (summary.flexible || 0).toLocaleString();
+            // Step 2는 전체 PR 데이터 사용 (PZAF 필터링 전)
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
+            // 계약분류 카운트 계산
+            const standard = data.filter(pr => pr['계약분류'] === '표준단가').length;
+            const nonStandard = data.filter(pr => pr['계약분류'] === '비표준단가').length;
+            const na = data.filter(pr => pr['계약분류'] === 'NA' || !pr['계약분류']).length;
+            
+            // 긴급도 카운트 계산
+            const urgent = data.filter(pr => pr['긴급도'] === '긴급').length;
+            const normal = data.filter(pr => pr['긴급도'] === '일반').length;
+            const flexible = data.filter(pr => pr['긴급도'] === '여유').length;
+            
+            document.getElementById('s2_standard').textContent = standard.toLocaleString();
+            document.getElementById('s2_nonStandard').textContent = nonStandard.toLocaleString();
+            document.getElementById('s2_na').textContent = na.toLocaleString();
+            document.getElementById('s2_urgent').textContent = urgent.toLocaleString();
+            document.getElementById('s2_normal').textContent = normal.toLocaleString();
+            document.getElementById('s2_flexible').textContent = flexible.toLocaleString();
             
             // Initial render with all data
             filterContractList(s2ContractFilter);
@@ -1047,24 +1058,27 @@
         function filterContractList(filterType) {
             s2ContractFilter = filterType;
             
+            // Step 2는 전체 PR 데이터 사용
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
             // Update card selection styles
             ['card_standard', 'card_nonStandard', 'card_na'].forEach(id => {
                 document.getElementById(id)?.classList.remove('ring-2', 'ring-blue-500', 'ring-purple-500', 'ring-orange-500');
             });
             
-            let filtered = [...quotationData];
+            let filtered = [...data];
             let filterLabel = '';
             
             if (filterType === '표준단가') {
-                filtered = quotationData.filter(pr => pr['계약분류'] === '표준단가');
+                filtered = data.filter(pr => pr['계약분류'] === '표준단가');
                 document.getElementById('card_standard')?.classList.add('ring-2', 'ring-blue-500');
                 filterLabel = '(표준단가)';
             } else if (filterType === '비표준단가') {
-                filtered = quotationData.filter(pr => pr['계약분류'] === '비표준단가');
+                filtered = data.filter(pr => pr['계약분류'] === '비표준단가');
                 document.getElementById('card_nonStandard')?.classList.add('ring-2', 'ring-purple-500');
                 filterLabel = '(비표준단가)';
             } else if (filterType === 'NA') {
-                filtered = quotationData.filter(pr => pr['계약분류'] === 'NA');
+                filtered = data.filter(pr => pr['계약분류'] === 'NA' || !pr['계약분류']);
                 document.getElementById('card_na')?.classList.add('ring-2', 'ring-orange-500');
                 filterLabel = '(견적대상)';
             }
@@ -1088,24 +1102,27 @@
         function filterUrgencyList(filterType) {
             s2UrgencyFilter = filterType;
             
+            // Step 2는 전체 PR 데이터 사용
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
             // Update card selection styles
             ['card_urgent', 'card_normal', 'card_flexible'].forEach(id => {
                 document.getElementById(id)?.classList.remove('ring-2', 'ring-red-500', 'ring-yellow-500', 'ring-green-500');
             });
             
-            let filtered = [...quotationData];
+            let filtered = [...data];
             let filterLabel = '';
             
             if (filterType === '긴급') {
-                filtered = quotationData.filter(pr => pr['긴급도'] === '긴급');
+                filtered = data.filter(pr => pr['긴급도'] === '긴급');
                 document.getElementById('card_urgent')?.classList.add('ring-2', 'ring-red-500');
                 filterLabel = '(긴급)';
             } else if (filterType === '일반') {
-                filtered = quotationData.filter(pr => pr['긴급도'] === '일반');
+                filtered = data.filter(pr => pr['긴급도'] === '일반');
                 document.getElementById('card_normal')?.classList.add('ring-2', 'ring-yellow-500');
                 filterLabel = '(일반)';
             } else if (filterType === '여유') {
-                filtered = quotationData.filter(pr => pr['긴급도'] === '여유');
+                filtered = data.filter(pr => pr['긴급도'] === '여유');
                 document.getElementById('card_flexible')?.classList.add('ring-2', 'ring-green-500');
                 filterLabel = '(여유)';
             }
@@ -1141,10 +1158,13 @@
         function populateStep3() {
             if (!processingResults) return;
             
-            const matched = quotationData.filter(pr => pr['업체매칭여부']).length;
-            const unmatched = quotationData.length - matched;
-            const direct = quotationData.filter(pr => pr['계약방식'] === '수의계약').length;
-            const bidding = quotationData.filter(pr => pr['계약방식'] === '지명경쟁').length;
+            // Step 3는 전체 PR 데이터 사용 (PZAF 필터링 전)
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
+            const matched = data.filter(pr => pr['업체매칭여부']).length;
+            const unmatched = data.length - matched;
+            const direct = data.filter(pr => pr['계약방식'] === '수의계약').length;
+            const bidding = data.filter(pr => pr['계약방식'] === '지명경쟁').length;
             
             document.getElementById('s3_matched').textContent = matched.toLocaleString();
             document.getElementById('s3_unmatched').textContent = unmatched.toLocaleString();
@@ -1159,20 +1179,23 @@
         function filterSupplierList(filterType) {
             s3SupplierFilter = filterType;
             
+            // Step 3는 전체 PR 데이터 사용
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
             // Update card selection styles
             ['card_matched', 'card_unmatched'].forEach(id => {
                 document.getElementById(id)?.classList.remove('ring-2', 'ring-green-500', 'ring-red-500');
             });
             
-            let filtered = [...quotationData];
+            let filtered = [...data];
             let filterLabel = '';
             
             if (filterType === 'matched') {
-                filtered = quotationData.filter(pr => pr['업체매칭여부']);
+                filtered = data.filter(pr => pr['업체매칭여부']);
                 document.getElementById('card_matched')?.classList.add('ring-2', 'ring-green-500');
                 filterLabel = '(매칭성공)';
             } else if (filterType === 'unmatched') {
-                filtered = quotationData.filter(pr => !pr['업체매칭여부']);
+                filtered = data.filter(pr => !pr['업체매칭여부']);
                 document.getElementById('card_unmatched')?.classList.add('ring-2', 'ring-red-500');
                 filterLabel = '(신규업체필요)';
             }
@@ -1192,20 +1215,23 @@
         function filterMethodList(filterType) {
             s3MethodFilter = filterType;
             
+            // Step 3는 전체 PR 데이터 사용
+            const data = allPRData.length > 0 ? allPRData : quotationData;
+            
             // Update card selection styles
             ['card_direct', 'card_bidding'].forEach(id => {
                 document.getElementById(id)?.classList.remove('ring-2', 'ring-blue-500', 'ring-purple-500');
             });
             
-            let filtered = [...quotationData];
+            let filtered = [...data];
             let filterLabel = '';
             
             if (filterType === '수의계약') {
-                filtered = quotationData.filter(pr => pr['계약방식'] === '수의계약');
+                filtered = data.filter(pr => pr['계약방식'] === '수의계약');
                 document.getElementById('card_direct')?.classList.add('ring-2', 'ring-blue-500');
                 filterLabel = '(수의계약)';
             } else if (filterType === '지명경쟁') {
-                filtered = quotationData.filter(pr => pr['계약방식'] === '지명경쟁');
+                filtered = data.filter(pr => pr['계약방식'] === '지명경쟁');
                 document.getElementById('card_bidding')?.classList.add('ring-2', 'ring-purple-500');
                 filterLabel = '(지명경쟁)';
             }
