@@ -541,7 +541,7 @@
                                     <th class="px-3 py-2 text-left">자재내역</th>
                                     <th class="px-3 py-2 text-left">산정방법</th>
                                     <th class="px-3 py-2 text-right">입찰예정가</th>
-                                    <th class="px-3 py-2 text-left">신뢰도</th>
+                                    <th class="px-3 py-2 text-center">가격조정</th>
                                 </tr>
                             </thead>
                             <tbody id="s6_priceList"></tbody>
@@ -679,14 +679,6 @@
                             <div>
                                 <h3 class="font-bold text-green-800">🎉 처리 완료</h3>
                                 <p class="text-sm text-green-600 mt-1">처리시간: <span id="s8_time">0</span>초 | 토큰사용: <span id="s8_tokens">0</span></p>
-                            </div>
-                            <div class="flex space-x-3">
-                                <button onclick="downloadExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                                    📥 Excel 다운로드
-                                </button>
-                                <button onclick="batchSRMTransfer()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-                                    🚀 SRM 일괄 전송
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1375,27 +1367,12 @@
                         </div>
                     </div>
 
-                    <!-- 금액정보 -->
-                    <div class="bg-blue-50 rounded p-3">
-                        <h4 class="font-medium text-xs text-gray-700 mb-2">금액정보</h4>
-                        <div class="grid grid-cols-3 gap-3 text-center mb-2">
-                            <div>
-                                <p class="text-xs text-gray-500">입찰예정가(KRW)</p>
-                                <p class="text-sm font-bold text-blue-600">₩${estimatedPrice.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">예산금액(KRW)</p>
-                                <p class="text-sm font-bold">₩${estimatedPrice.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">예산금액(USD)</p>
-                                <p class="text-sm font-bold text-green-600">$${estimatedPriceUSD.toLocaleString()}</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 text-center border-t pt-2">
-                            <div><p class="text-xs text-gray-500">환율</p><p class="text-xs font-medium">${exchangeRate.toLocaleString()}원</p></div>
-                            <div><p class="text-xs text-gray-500">요청수량</p><p class="text-xs font-medium">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p></div>
-                            <div><p class="text-xs text-gray-500">총중량(KG)</p><p class="text-xs font-medium">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p></div>
+                    <!-- 수량정보 -->
+                    <div class="bg-gray-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">수량정보</h4>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div><span class="text-gray-500">요청수량</span><p class="font-medium">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p></div>
+                            <div><span class="text-gray-500">총중량(KG)</span><p class="font-medium">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p></div>
                         </div>
                     </div>
 
@@ -1518,8 +1495,8 @@
                 document.getElementById('defaultCount').textContent = def;
             }
             
-            document.getElementById('s6_priceList').innerHTML = quotationData.slice(0, 50).map(pr => `
-                <tr class="border-b hover:bg-gray-50">
+            document.getElementById('s6_priceList').innerHTML = quotationData.slice(0, 50).map((pr, idx) => `
+                <tr class="border-b hover:bg-gray-50" id="price-row-${idx}">
                     <td class="px-3 py-2">${pr['예정가_산정방법'] === 'LLM 산정' ? '🧠' : pr['예정가_산정방법'] === '기본값' ? '⚠️' : '✅'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-3 py-2 truncate max-w-xs">${(pr['내역'] || '').substring(0, 25)}...</td>
                     <td class="px-3 py-2">
@@ -1530,10 +1507,66 @@
                             'bg-orange-100 text-orange-800'
                         }">${pr['예정가_산정방법'] || '-'}</span>
                     </td>
-                    <td class="px-3 py-2 text-right">₩${(pr['입찰예정가'] || 0).toLocaleString()}</td>
-                    <td class="px-3 py-2">${pr['LLM응답']?.['신뢰도'] || '-'}</td>
+                    <td class="px-3 py-2 text-right">
+                        <span id="price-value-${idx}">₩${(pr['입찰예정가'] || 0).toLocaleString()}</span>
+                        <span id="price-adjust-${idx}" class="text-xs text-gray-500 ml-1"></span>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            <button onclick="adjustPrice(${idx}, -5)" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200" title="-5%">-5%</button>
+                            <button onclick="adjustPrice(${idx}, 5)" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200" title="+5%">+5%</button>
+                        </div>
+                    </td>
                 </tr>
             `).join('');
+        }
+        
+        // 가격 조정 추적 객체
+        let priceAdjustments = {};
+        
+        function adjustPrice(idx, percent) {
+            const pr = quotationData[idx];
+            if (!pr) return;
+            
+            const originalPrice = pr['입찰예정가_원본'] || pr['입찰예정가'] || 0;
+            
+            // 원본 가격 저장 (처음 조정시)
+            if (!pr['입찰예정가_원본']) {
+                pr['입찰예정가_원본'] = pr['입찰예정가'] || 0;
+            }
+            
+            // 현재 조정 비율 계산
+            const currentAdjust = priceAdjustments[idx] || 0;
+            const newAdjust = currentAdjust + percent;
+            
+            // 조정 비율 제한 (-50% ~ +50%)
+            if (newAdjust < -50 || newAdjust > 50) {
+                alert('가격 조정 범위는 -50% ~ +50% 입니다.');
+                return;
+            }
+            
+            priceAdjustments[idx] = newAdjust;
+            
+            // 새 가격 계산
+            const newPrice = Math.round(originalPrice * (1 + newAdjust / 100));
+            pr['입찰예정가'] = newPrice;
+            
+            // UI 업데이트
+            const priceEl = document.getElementById(`price-value-${idx}`);
+            const adjustEl = document.getElementById(`price-adjust-${idx}`);
+            
+            if (priceEl) {
+                priceEl.textContent = `₩${newPrice.toLocaleString()}`;
+                priceEl.className = newAdjust !== 0 ? 'font-bold text-blue-600' : '';
+            }
+            if (adjustEl) {
+                if (newAdjust !== 0) {
+                    adjustEl.textContent = `(${newAdjust > 0 ? '+' : ''}${newAdjust}%)`;
+                    adjustEl.className = `text-xs ml-1 ${newAdjust > 0 ? 'text-green-600' : 'text-red-600'}`;
+                } else {
+                    adjustEl.textContent = '';
+                }
+            }
         }
 
         // ============================================
