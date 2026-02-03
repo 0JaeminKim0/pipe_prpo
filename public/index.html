@@ -24,7 +24,7 @@
         .step-nav { @apply flex flex-col items-center cursor-pointer transition-all; }
         .step-nav:hover .step-circle { @apply ring-2 ring-blue-300; }
         .step-circle { @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all; }
-        .step-label { @apply text-xs mt-1 text-center max-w-[60px] leading-tight; }
+        .step-label { @apply text-xs mt-1 text-center max-w-[90px] leading-tight; }
         .mini-card { @apply bg-white rounded shadow p-3 text-center; }
     </style>
 </head>
@@ -51,56 +51,56 @@
                     <!-- Step 1: PR 데이터 접수 및 확인 -->
                     <div class="step-nav" data-step="1" onclick="navigateToStep(1)" title="PR 데이터 접수 및 확인">
                         <div class="step-circle step-active" id="step-circle-1">1</div>
-                        <span class="step-label">PR 접수</span>
+                        <span class="step-label">PR 데이터 접수 및 확인</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="1"></div>
                     
                     <!-- Step 2: 계약 여부 및 긴급도 분석 -->
                     <div class="step-nav" data-step="2" onclick="navigateToStep(2)" title="계약 여부 및 긴급도 분석">
                         <div class="step-circle step-pending" id="step-circle-2">2</div>
-                        <span class="step-label">계약/긴급도</span>
+                        <span class="step-label">계약 여부 및 긴급도 분석</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="2"></div>
                     
                     <!-- Step 3: 최근 납품 업체 및 발주 방식 검토 -->
                     <div class="step-nav" data-step="3" onclick="navigateToStep(3)" title="최근 납품 업체 및 발주 방식 검토">
                         <div class="step-circle step-pending" id="step-circle-3">3</div>
-                        <span class="step-label">업체/발주</span>
+                        <span class="step-label">최근 납품 업체 및 발주 방식 검토</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="3"></div>
                     
                     <!-- Step 4: 견적 의뢰서 생성 -->
                     <div class="step-nav" data-step="4" onclick="navigateToStep(4)" title="견적 의뢰서 생성">
                         <div class="step-circle step-pending" id="step-circle-4">4</div>
-                        <span class="step-label">견적의뢰</span>
+                        <span class="step-label">견적 의뢰서 생성</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="4"></div>
                     
                     <!-- Step 5: 견적 의뢰 세부 내용 검토 -->
                     <div class="step-nav" data-step="5" onclick="navigateToStep(5)" title="견적 의뢰 세부 내용 검토">
                         <div class="step-circle step-pending" id="step-circle-5">5</div>
-                        <span class="step-label">HITL</span>
+                        <span class="step-label">견적 의뢰 세부 내용 검토</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="5"></div>
                     
                     <!-- Step 6: 입찰 예정가 산출 -->
                     <div class="step-nav" data-step="6" onclick="navigateToStep(6)" title="입찰 예정가 산출">
                         <div class="step-circle step-pending" id="step-circle-6">6</div>
-                        <span class="step-label">예정가</span>
+                        <span class="step-label">입찰 예정가 산출</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="6"></div>
                     
                     <!-- Step 7: 업체 견적 수신 결과 -->
                     <div class="step-nav" data-step="7" onclick="navigateToStep(7)" title="업체 견적 수신 결과">
                         <div class="step-circle step-pending" id="step-circle-7">7</div>
-                        <span class="step-label">견적수신</span>
+                        <span class="step-label">업체 견적 수신 결과</span>
                     </div>
                     <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="7"></div>
                     
                     <!-- Step 8: 최종 견적 비교 -->
                     <div class="step-nav" data-step="8" onclick="navigateToStep(8)" title="최종 견적 비교">
                         <div class="step-circle step-pending" id="step-circle-8">8</div>
-                        <span class="step-label">견적비교</span>
+                        <span class="step-label">최종 견적 비교</span>
                     </div>
                 </div>
             </div>
