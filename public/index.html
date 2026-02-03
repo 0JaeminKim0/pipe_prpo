@@ -1137,7 +1137,7 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[120px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 15)}${(pr['자재내역']?.length > 15) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[120px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 15)}${(pr['내역']?.length > 15) ? '...' : ''}</td>
                     <td class="px-2 py-2">
                         <span class="px-1.5 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
                             ${pr['계약분류'] || '-'}
@@ -1189,7 +1189,7 @@
                 <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
                     <td class="px-2 py-2 text-xs">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
                     <td class="px-2 py-2">
                         <span class="text-xs ${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
@@ -1263,7 +1263,7 @@
                 filtered = filtered.filter(pr => 
                     (pr['구매요청'] || '').toLowerCase().includes(searchTerm) ||
                     (pr['자재번호'] || '').toLowerCase().includes(searchTerm) ||
-                    (pr['자재내역'] || '').toLowerCase().includes(searchTerm) ||
+                    (pr['내역'] || '').toLowerCase().includes(searchTerm) ||
                     (pr['매칭업체명'] || '').toLowerCase().includes(searchTerm)
                 );
             }
@@ -1275,7 +1275,7 @@
                 <tr class="border-b hover:bg-gray-50 ${!pr['업체매칭여부'] ? 'bg-red-50' : ''}">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs">${pr['매칭업체명'] || '<span class="text-red-500">신규필요</span>'}</td>
                     <td class="px-2 py-2 text-xs text-right">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
                 </tr>
@@ -1313,7 +1313,7 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2">
                         <span class="text-xs ${pr['계약방식'] === '수의계약' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약방식'] || '-'}</span>
                     </td>
