@@ -232,6 +232,70 @@ app.post('/api/upload', upload.array('files', 10), async (req, res) => {
   }
 });
 
+// Load sample data from server (pre-uploaded files)
+app.post('/api/load-sample', async (req, res) => {
+  try {
+    const samplePath = path.join(__dirname, 'data');
+    
+    // Check if sample data directory exists
+    if (!fs.existsSync(samplePath)) {
+      return res.status(404).json({ error: 'Sample data not found. Please upload files manually.' });
+    }
+
+    const files = fs.readdirSync(samplePath).filter(f => 
+      f.toLowerCase().endsWith('.xlsx') || f.toLowerCase().endsWith('.xls')
+    );
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No Excel files found in sample data.' });
+    }
+
+    const results = [];
+    globalState.prData = [];
+    globalState.poHistory = [];
+
+    for (const filename of files) {
+      const filePath = path.join(samplePath, filename);
+      const buffer = fs.readFileSync(filePath);
+      const data = parseExcelFile(buffer, filename);
+      
+      console.log(`Loading sample file: ${filename}, rows: ${data.length}`);
+
+      if (filename.includes('PZAF')) {
+        globalState.poHistory = data;
+        results.push({
+          filename: filename,
+          type: 'po_history',
+          rows: data.length
+        });
+      } else if (filename.includes('1P0K') || filename.includes('1P0M') || filename.includes('구매요청')) {
+        const source = filename.includes('1P0K02') ? '1P0K02' : 
+                      filename.includes('1P0M01') ? '1P0M01' : 'Unknown';
+        data.forEach(row => row['데이터소스'] = source);
+        globalState.prData = globalState.prData.concat(data);
+        results.push({
+          filename: filename,
+          type: 'pr_data',
+          source,
+          rows: data.length
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      files: results,
+      summary: {
+        totalPR: globalState.prData.length,
+        totalPO: globalState.poHistory.length
+      }
+    });
+  } catch (error) {
+    console.error('Load sample error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get processing status
 app.get('/api/status', (req, res) => {
   res.json(globalState.processingStatus);

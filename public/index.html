@@ -112,6 +112,17 @@
                         </div>
                     </div>
 
+                    <!-- Quick Load PR Data Button -->
+                    <div class="mt-6 text-center">
+                        <button id="loadSampleBtn" class="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors text-lg shadow-md">
+                            📂 PR 불러오기
+                        </button>
+                        <p class="text-xs text-gray-500 mt-3">3개 Excel 파일에서 PR 데이터를 불러옵니다</p>
+                        <p class="text-xs text-gray-400">• DR_1P0K02_25.10~12.구매요청진행현황.XLSX</p>
+                        <p class="text-xs text-gray-400">• DR_1P0M01_25.10~12.구매요청진행현황.XLSX</p>
+                        <p class="text-xs text-gray-400">• DR_PZAF 발주실적 상세_2025_2026.01.29_11.11.51.xlsx</p>
+                    </div>
+
                     <!-- Start Button -->
                     <div class="mt-8 text-center">
                         <button id="startProcessBtn" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors" disabled>
@@ -407,6 +418,36 @@
                 document.getElementById('pzafCount').textContent = res.data.pzafCount.toLocaleString();
             } catch (e) {
                 console.error('Summary fetch failed:', e);
+            }
+        }
+
+        // Load Sample Data Button
+        document.getElementById('loadSampleBtn').addEventListener('click', loadSampleData);
+
+        async function loadSampleData() {
+            const btn = document.getElementById('loadSampleBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>불러오는 중...';
+
+            try {
+                const res = await axios.post('/api/load-sample');
+                
+                if (res.data.success) {
+                    uploadedFiles = res.data.files;
+                    displayUploadedFiles();
+                    await updateDataSummary();
+                    startProcessBtn.disabled = false;
+                    
+                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>불러오기 완료';
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-gray-400');
+                } else {
+                    throw new Error(res.data.error || '데이터 로드 실패');
+                }
+            } catch (e) {
+                alert('데이터 로드 실패: ' + (e.response?.data?.error || e.message));
+                btn.disabled = false;
+                btn.innerHTML = '📂 PR 불러오기';
             }
         }
 
