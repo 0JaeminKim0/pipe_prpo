@@ -21,12 +21,44 @@
         .tab-active { @apply bg-white border-b-2 border-blue-600 text-blue-600; }
         .tab-inactive { @apply bg-gray-100 text-gray-600 hover:bg-gray-200; }
         .card-stat { @apply bg-white rounded-lg shadow p-4 text-center; }
-        .step-nav { @apply flex items-center cursor-pointer transition-all px-2 py-1 rounded-lg; }
-        .step-nav:hover { @apply bg-blue-50; }
-        .step-nav.active { @apply bg-blue-50; }
-        .step-circle { @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0; }
-        .step-label { @apply text-xs ml-2 whitespace-nowrap hidden sm:block; }
-        .step-line { @apply flex-shrink-0; }
+        .step-nav { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 4px;
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+        .step-nav:hover { background-color: #f0f9ff; border-radius: 8px; }
+        .step-circle { 
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .step-label { 
+            font-size: 11px;
+            margin-top: 6px;
+            text-align: center;
+            color: #4b5563;
+            line-height: 1.3;
+            max-width: 90px;
+        }
+        .step-line { 
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, #d1d5db, #e5e7eb);
+            margin: 0 2px;
+            margin-bottom: 20px;
+        }
+        .step-line.completed { background: linear-gradient(to right, #22c55e, #16a34a); }
         .mini-card { @apply bg-white rounded shadow p-3 text-center; }
     </style>
 </head>
@@ -47,57 +79,57 @@
         </header>
 
         <!-- 8-Step Progress Navigation -->
-        <div class="bg-white border-b shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <div class="flex items-center">
+        <div class="bg-white border-b">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
                     <!-- Step 1 -->
                     <div class="step-nav" data-step="1" onclick="navigateToStep(1)" title="PR 데이터 접수 및 확인">
                         <div class="step-circle step-active" id="step-circle-1">1</div>
                         <span class="step-label">PR 접수</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="1"></div>
+                    <div class="step-line" data-line="1"></div>
                     
                     <!-- Step 2 -->
                     <div class="step-nav" data-step="2" onclick="navigateToStep(2)" title="계약 여부 및 긴급도 분석">
                         <div class="step-circle step-pending" id="step-circle-2">2</div>
                         <span class="step-label">계약/긴급도</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="2"></div>
+                    <div class="step-line" data-line="2"></div>
                     
                     <!-- Step 3 -->
                     <div class="step-nav" data-step="3" onclick="navigateToStep(3)" title="최근 납품 업체 및 발주 방식 검토">
                         <div class="step-circle step-pending" id="step-circle-3">3</div>
                         <span class="step-label">업체/발주</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="3"></div>
+                    <div class="step-line" data-line="3"></div>
                     
                     <!-- Step 4 -->
                     <div class="step-nav" data-step="4" onclick="navigateToStep(4)" title="견적 의뢰서 생성">
                         <div class="step-circle step-pending" id="step-circle-4">4</div>
                         <span class="step-label">견적의뢰</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="4"></div>
+                    <div class="step-line" data-line="4"></div>
                     
                     <!-- Step 5 -->
                     <div class="step-nav" data-step="5" onclick="navigateToStep(5)" title="견적 의뢰 세부 내용 검토">
                         <div class="step-circle step-pending" id="step-circle-5">5</div>
                         <span class="step-label">HITL 검토</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="5"></div>
+                    <div class="step-line" data-line="5"></div>
                     
                     <!-- Step 6 -->
                     <div class="step-nav" data-step="6" onclick="navigateToStep(6)" title="입찰 예정가 산출">
                         <div class="step-circle step-pending" id="step-circle-6">6</div>
                         <span class="step-label">예정가</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="6"></div>
+                    <div class="step-line" data-line="6"></div>
                     
                     <!-- Step 7 -->
                     <div class="step-nav" data-step="7" onclick="navigateToStep(7)" title="업체 견적 수신 결과">
                         <div class="step-circle step-pending" id="step-circle-7">7</div>
                         <span class="step-label">견적수신</span>
                     </div>
-                    <div class="w-6 h-0.5 bg-gray-300 step-line" data-line="7"></div>
+                    <div class="step-line" data-line="7"></div>
                     
                     <!-- Step 8 -->
                     <div class="step-nav" data-step="8" onclick="navigateToStep(8)" title="최종 견적 비교">
