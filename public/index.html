@@ -152,7 +152,7 @@
                 <div class="grid grid-cols-3 gap-6">
                     <!-- Left: Upload Panel -->
                     <div class="col-span-2 bg-white rounded-lg shadow p-6">
-                        <h2 class="text-lg font-bold mb-4">📥 PR 접수 검토</h2>
+                        <h2 class="text-lg font-bold mb-4">📥 PR 데이터 접수 및 확인</h2>
                         
                         <!-- Upload Area -->
                         <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
@@ -246,7 +246,7 @@
 
                         <div class="mt-4 flex justify-end">
                             <button onclick="goToStep(2)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                                다음: 계약/긴급도 확인 →
+                                다음: 계약 여부 및 긴급도 분석 →
                             </button>
                         </div>
                     </div>
@@ -258,7 +258,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     <!-- Left: 계약분류 -->
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="font-bold mb-4">📋 계약 분류 <span id="s2_contractFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
+                        <h3 class="font-bold mb-4">📋 계약 여부 확인 <span id="s2_contractFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
                         <div class="grid grid-cols-3 gap-3 mb-4">
                             <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterContractList('표준단가')" id="card_standard">
                                 <p class="text-xl font-bold text-blue-600" id="s2_standard">0</p>
@@ -333,7 +333,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(3)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 업체/발주방식 →
+                        다음: 최근 납품 업체 및 발주 방식 검토 →
                     </button>
                 </div>
             </div>
@@ -343,7 +343,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     <!-- Left: 업체 매칭 -->
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="font-bold mb-4">🏢 납품업체 매칭 <span id="s3_supplierFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
+                        <h3 class="font-bold mb-4">🏢 최근 납품 업체 검토 <span id="s3_supplierFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="mini-card border-l-4 border-green-500 cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" onclick="filterSupplierList('matched')" id="card_matched">
                                 <p class="text-xl font-bold text-green-600" id="s3_matched">0</p>
@@ -374,7 +374,7 @@
 
                     <!-- Right: 발주방식 -->
                     <div class="bg-white rounded-lg shadow p-6">
-                        <h3 class="font-bold mb-4">📝 발주방식 판단 <span id="s3_methodFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
+                        <h3 class="font-bold mb-4">📝 발주 방식 검토 <span id="s3_methodFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterMethodList('수의계약')" id="card_direct">
                                 <p class="text-xl font-bold text-blue-600" id="s3_direct">0</p>
@@ -409,7 +409,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(4)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 견적의뢰 생성 →
+                        다음: 견적 의뢰서 생성 →
                     </button>
                 </div>
             </div>
@@ -420,7 +420,7 @@
                     <!-- Header -->
                     <div class="p-4 border-b">
                         <div class="flex justify-between items-center">
-                            <h2 class="text-lg font-bold">📋 견적의뢰 관리</h2>
+                            <h2 class="text-lg font-bold">📋 견적 의뢰서 생성</h2>
                             <span class="text-gray-600">처리현황: <span id="quotationTotal">0</span>건 중 <span id="quotationAuto">0</span>건 자동완료</span>
                         </div>
                         <!-- Filters -->
@@ -473,7 +473,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(5)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: HITL 검토 →
+                        다음: 견적 의뢰 세부 내용 검토 →
                     </button>
                 </div>
             </div>
@@ -482,7 +482,7 @@
             <div id="step5" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">⚠️ HITL (Human-in-the-Loop) 검토</h2>
+                        <h2 class="text-lg font-bold">⚠️ 견적 의뢰 세부 내용 검토 (HITL)</h2>
                         <div class="text-sm">
                             <span class="text-orange-600 font-medium"><span id="hitlTotalCount">0</span>건</span> 검토 필요
                         </div>
@@ -504,7 +504,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(6)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 입찰예정가 산정 →
+                        다음: 입찰 예정가 산출 →
                     </button>
                 </div>
             </div>
@@ -512,7 +512,7 @@
             <!-- ======================= STEP 6: 입찰예정가 산정 ======================= -->
             <div id="step6" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-bold mb-4">💰 입찰예정가 산정</h2>
+                    <h2 class="text-lg font-bold mb-4">💰 입찰 예정가 산출</h2>
 
                     <div class="grid grid-cols-4 gap-4 mb-6">
                         <div class="mini-card">
@@ -558,7 +558,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(7)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 견적 수신 확인 →
+                        다음: 업체 견적 수신 결과 →
                     </button>
                 </div>
             </div>
@@ -567,7 +567,7 @@
             <div id="step7" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">📬 견적 수신 확인</h2>
+                        <h2 class="text-lg font-bold">📬 업체 견적 수신 결과</h2>
                         <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
                     </div>
 
@@ -619,7 +619,7 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(8)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 견적 비교 분석 →
+                        다음: 최종 견적 비교 →
                     </button>
                 </div>
             </div>
@@ -628,7 +628,7 @@
             <div id="step8" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">📊 견적 비교 분석</h2>
+                        <h2 class="text-lg font-bold">📊 최종 견적 비교</h2>
                         <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
                     </div>
 
