@@ -523,21 +523,25 @@
             document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`step${step}`).classList.remove('hidden');
 
-            // Update step indicators
-            document.querySelectorAll('.step-item').forEach((el, idx) => {
+            // Update step indicators (only header steps with data-step attribute)
+            document.querySelectorAll('.step-item[data-step]').forEach((el) => {
+                const stepNum = parseInt(el.getAttribute('data-step'));
                 const circle = el.querySelector('.step-circle');
-                if (idx + 1 < step) {
-                    circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-completed';
-                } else if (idx + 1 === step) {
-                    circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-active';
-                } else {
-                    circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending';
+                if (circle) {
+                    if (stepNum < step) {
+                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-completed';
+                    } else if (stepNum === step) {
+                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-active';
+                    } else {
+                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending';
+                    }
                 }
             });
 
             // Update step lines
-            document.querySelectorAll('.step-line').forEach((el, idx) => {
-                if (idx + 1 < step) {
+            document.querySelectorAll('.step-line').forEach((el) => {
+                const lineNum = parseInt(el.getAttribute('data-line'));
+                if (lineNum < step) {
                     el.classList.remove('bg-gray-300');
                     el.classList.add('bg-green-600');
                 } else {
