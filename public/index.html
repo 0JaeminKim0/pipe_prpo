@@ -268,16 +268,19 @@
                             <div id="invalidPRSection" class="hidden">
                                 <div class="flex justify-between items-center mb-3">
                                     <h4 class="font-medium">⚠️ 누락 PR (이메일 발송 필요)</h4>
-                                    <button class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">일괄 발송</button>
+                                    <button onclick="openBatchEmailModal()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                                        <i class="fas fa-envelope mr-1"></i>일괄 발송
+                                    </button>
                                 </div>
-                                <div class="border rounded-lg overflow-hidden">
+                                <div class="border rounded-lg overflow-hidden max-h-80 overflow-y-auto">
                                     <table class="w-full text-sm">
-                                        <thead class="bg-gray-50">
+                                        <thead class="bg-gray-50 sticky top-0">
                                             <tr>
                                                 <th class="px-4 py-3 text-left">PR번호</th>
                                                 <th class="px-4 py-3 text-left">자재번호</th>
                                                 <th class="px-4 py-3 text-left">누락항목</th>
                                                 <th class="px-4 py-3 text-left">담당자</th>
+                                                <th class="px-4 py-3 text-left">액션</th>
                                             </tr>
                                         </thead>
                                         <tbody id="invalidPRList"></tbody>
@@ -629,6 +632,54 @@
         </div>
     </div>
 
+    <!-- Batch Email Confirmation Modal -->
+    <div id="batchEmailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6 border-b">
+                <h3 class="text-lg font-bold">📧 이메일 발송 확인</h3>
+            </div>
+            <div class="p-6" id="batchEmailContent">
+                <!-- Content will be dynamically populated -->
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+                <button onclick="closeBatchEmailModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">취소</button>
+                <button onclick="sendBatchEmails()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <i class="fas fa-paper-plane mr-1"></i>📧 발송
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Preview Modal -->
+    <div id="emailPreviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-lg font-bold">📧 이메일 미리보기</h3>
+                <button onclick="closeEmailPreviewModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6" id="emailPreviewContent">
+                <!-- Content will be dynamically populated -->
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-end">
+                <button onclick="closeEmailPreviewModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Sent Success Modal -->
+    <div id="emailSentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-8 text-center">
+                <div class="text-6xl mb-4">✅</div>
+                <h3 class="text-xl font-bold mb-2">이메일 발송 완료</h3>
+                <p class="text-gray-600 mb-6" id="emailSentMessage">0명에게 0건의 메일이 발송되었습니다.</p>
+                <button onclick="closeEmailSentModal()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">확인</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // State
         let currentStep = 1;
@@ -899,12 +950,17 @@
             if (invalidCount > 0) {
                 document.querySelector('.validation-warning').classList.remove('hidden');
                 document.getElementById('invalidPRSection').classList.remove('hidden');
-                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 20).map(pr => `
+                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 50).map((pr, idx) => `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-4 py-3">⚠️ ${pr['구매요청'] || '-'}</td>
                         <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
                         <td class="px-4 py-3 text-red-600">${pr['누락항목'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['구매요청자'] || '-'}</td>
+                        <td class="px-4 py-3">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
+                        <td class="px-4 py-3">
+                            <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
+                                📧 미리보기
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -1457,6 +1513,174 @@
             } catch (e) {
                 alert('일괄 승인 실패: ' + e.message);
             }
+        }
+
+        // ============================================
+        // Email Functions
+        // ============================================
+        
+        // State for tracking sent emails
+        let sentEmails = {};
+
+        // Open batch email confirmation modal
+        function openBatchEmailModal() {
+            const invalidPR = processingResults?.invalidPR || [];
+            if (invalidPR.length === 0) {
+                alert('발송할 누락 PR이 없습니다.');
+                return;
+            }
+
+            // Group by 담당자
+            const grouped = {};
+            invalidPR.forEach(pr => {
+                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+                if (!grouped[manager]) grouped[manager] = [];
+                grouped[manager].push(pr);
+            });
+
+            const managerCount = Object.keys(grouped).length;
+            const prCount = invalidPR.length;
+
+            let managerList = '';
+            Object.entries(grouped).forEach(([manager, prs]) => {
+                managerList += `<p class="text-sm">• ${manager}: ${prs.length}건</p>`;
+            });
+
+            document.getElementById('batchEmailContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="font-medium mb-2">발송 대상: ${managerCount}명</p>
+                        ${managerList}
+                    </div>
+                    <p class="text-gray-600">총 <strong>${prCount}건</strong>의 누락 PR 안내 메일을 발송합니다.</p>
+                </div>
+            `;
+
+            document.getElementById('batchEmailModal').classList.remove('hidden');
+        }
+
+        function closeBatchEmailModal() {
+            document.getElementById('batchEmailModal').classList.add('hidden');
+        }
+
+        // Send batch emails
+        function sendBatchEmails() {
+            const invalidPR = processingResults?.invalidPR || [];
+            
+            // Group by 담당자
+            const grouped = {};
+            invalidPR.forEach(pr => {
+                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+                if (!grouped[manager]) grouped[manager] = [];
+                grouped[manager].push(pr);
+            });
+
+            // Mark all as sent
+            invalidPR.forEach((pr, idx) => {
+                sentEmails[idx] = {
+                    sentAt: new Date().toISOString(),
+                    recipient: pr['담당자'] || pr['구매요청자'] || '담당자미지정'
+                };
+            });
+
+            const managerCount = Object.keys(grouped).length;
+            const prCount = invalidPR.length;
+
+            closeBatchEmailModal();
+
+            // Update the table to show "발송완료" status
+            updateInvalidPRListWithStatus();
+
+            // Show success modal
+            document.getElementById('emailSentMessage').textContent = 
+                `${managerCount}명에게 ${prCount}건의 메일이 발송되었습니다.`;
+            document.getElementById('emailSentModal').classList.remove('hidden');
+        }
+
+        function closeEmailSentModal() {
+            document.getElementById('emailSentModal').classList.add('hidden');
+        }
+
+        // Update invalid PR list to show sent status
+        function updateInvalidPRListWithStatus() {
+            const invalidPR = processingResults?.invalidPR || [];
+            
+            document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 50).map((pr, idx) => {
+                const isSent = sentEmails[idx];
+                return `
+                    <tr class="border-b hover:bg-gray-50 ${isSent ? 'bg-green-50' : ''}">
+                        <td class="px-4 py-3">${isSent ? '✅' : '⚠️'} ${pr['구매요청'] || '-'}</td>
+                        <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
+                        <td class="px-4 py-3 text-red-600">${pr['누락항목'] || '-'}</td>
+                        <td class="px-4 py-3">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
+                        <td class="px-4 py-3">
+                            ${isSent ? `
+                                <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200">
+                                    ✉️ 발송완료
+                                </button>
+                            ` : `
+                                <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
+                                    📧 미리보기
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Open email preview modal for a specific PR
+        function openEmailPreview(prIndex) {
+            const invalidPR = processingResults?.invalidPR || [];
+            const pr = invalidPR[prIndex];
+            if (!pr) return;
+
+            const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+            const email = `${manager.replace(/\s/g, '').toLowerCase()}@company.com`;
+            const isSent = sentEmails[prIndex];
+
+            document.getElementById('emailPreviewContent').innerHTML = `
+                <div class="space-y-4">
+                    ${isSent ? `
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700 text-sm">
+                            ✅ 발송완료: ${new Date(isSent.sentAt).toLocaleString()}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="border rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 px-4 py-3 border-b">
+                            <p class="text-sm"><strong>To:</strong> ${manager} &lt;${email}&gt;</p>
+                            <p class="text-sm"><strong>Subject:</strong> [PR 필수항목 누락] 1건 정보 업데이트 요청</p>
+                        </div>
+                        
+                        <div class="p-4 space-y-4 text-sm">
+                            <p>안녕하세요, <strong>${manager}</strong>님</p>
+                            
+                            <p>아래 구매요청 건에 필수항목이 누락되어 처리가 불가합니다.<br>
+                            확인 후 업데이트 부탁드립니다.</p>
+                            
+                            <div class="bg-gray-50 border rounded-lg p-4 space-y-2">
+                                <p class="font-bold">■ 누락 PR 내역</p>
+                                <table class="w-full text-sm">
+                                    <tr><td class="py-1 text-gray-600 w-24">PR번호:</td><td class="font-medium">${pr['구매요청'] || '-'}</td></tr>
+                                    <tr><td class="py-1 text-gray-600">자재번호:</td><td class="font-medium">${pr['자재번호'] || '-'}</td></tr>
+                                    <tr><td class="py-1 text-gray-600">자재내역:</td><td class="font-medium">${pr['내역'] || '-'}</td></tr>
+                                    <tr><td class="py-1 text-gray-600">누락항목:</td><td class="font-medium text-red-600">${pr['누락항목'] || '-'}</td></tr>
+                                </table>
+                            </div>
+                            
+                            <p>감사합니다.</p>
+                            <p class="text-gray-600">구매팀 AI Agent</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('emailPreviewModal').classList.remove('hidden');
+        }
+
+        function closeEmailPreviewModal() {
+            document.getElementById('emailPreviewModal').classList.add('hidden');
         }
     </script>
 </body>
