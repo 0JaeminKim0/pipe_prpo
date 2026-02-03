@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (if any)
+uploads/
+
+# Build
+dist/
+
+# Data files (optional - include if you want to keep them)
+# *.xlsx
+# *.xls
