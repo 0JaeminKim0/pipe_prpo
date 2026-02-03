@@ -84,10 +84,32 @@ function addLog(message, type = 'info') {
   console.log(`[${type.toUpperCase()}] ${message}`);
 }
 
+// Convert Excel Serial Number to JS Date
+function excelSerialToDate(serial) {
+  if (!serial) return null;
+  
+  // If it's already a Date object or valid date string
+  if (serial instanceof Date) return serial;
+  if (typeof serial === 'string') {
+    const parsed = new Date(serial);
+    if (!isNaN(parsed.getTime())) return parsed;
+  }
+  
+  // Excel serial number (number of days since 1900-01-01)
+  if (typeof serial === 'number' && serial > 25000 && serial < 100000) {
+    const utcDays = Math.floor(serial - 25569);
+    const utcValue = utcDays * 86400;
+    return new Date(utcValue * 1000);
+  }
+  
+  return null;
+}
+
 function calculateDaysDiff(date1, date2) {
   if (!date1 || !date2) return null;
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
+  const d1 = excelSerialToDate(date1) || new Date(date1);
+  const d2 = date2 instanceof Date ? date2 : new Date(date2);
+  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return null;
   return Math.ceil((d1 - d2) / (1000 * 60 * 60 * 24));
 }
 
@@ -597,23 +619,42 @@ async function processAgent() {
     const leadTime = parseInt(row['LEAD_TIME']) || 0;
     
     if (prDeadline) {
+      // Convert Excel serial to readable date for display
+      const deadlineDate = excelSerialToDate(prDeadline);
+      if (deadlineDate) {
+        row['PR납기일_변환'] = deadlineDate.toISOString().split('T')[0];
+      }
+      
       const daysUntilDeadline = calculateDaysDiff(prDeadline, CONFIG.SIMULATION_DATE);
       row['납기까지일수'] = daysUntilDeadline;
-      row['실제잔여일수'] = daysUntilDeadline - leadTime;
       
-      if (row['실제잔여일수'] <= CONFIG.URGENCY_URGENT) {
+      // 실제잔여일수 = 납기까지일수 - LEAD_TIME
+      // (발주부터 납품까지 걸리는 시간을 고려한 실제 작업 가능 일수)
+      row['실제잔여일수'] = daysUntilDeadline !== null ? daysUntilDeadline - leadTime : null;
+      
+      // 긴급도 판단 (실제잔여일수 기준)
+      const remainDays = row['실제잔여일수'];
+      if (remainDays === null) {
+        row['긴급도'] = '일반';
+        row['긴급도_신호'] = '🟡';
+      } else if (remainDays <= CONFIG.URGENCY_URGENT) {
+        // 2일 이하: 긴급 (이미 납기가 지났거나 매우 촉박)
         row['긴급도'] = '긴급';
         row['긴급도_신호'] = '🔴';
-      } else if (row['실제잔여일수'] <= CONFIG.URGENCY_NORMAL) {
+      } else if (remainDays <= CONFIG.URGENCY_NORMAL) {
+        // 3~5일: 일반
         row['긴급도'] = '일반';
         row['긴급도_신호'] = '🟡';
       } else {
+        // 5일 초과: 여유
         row['긴급도'] = '여유';
         row['긴급도_신호'] = '🟢';
       }
     } else {
       row['긴급도'] = '일반';
       row['긴급도_신호'] = '🟡';
+      row['납기까지일수'] = null;
+      row['실제잔여일수'] = null;
     }
   });
   

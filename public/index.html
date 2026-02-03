@@ -1041,12 +1041,17 @@
                 </tr>
             `).join('');
             
-            // Urgency list
-            document.getElementById('s2_urgencyList').innerHTML = quotationData.slice(0, 30).map(pr => `
+            // Urgency list - sort by 실제잔여일수 ascending (most urgent first)
+            const sortedByUrgency = [...quotationData].sort((a, b) => {
+                const aRemain = a['실제잔여일수'] ?? 999;
+                const bRemain = b['실제잔여일수'] ?? 999;
+                return aRemain - bRemain;
+            });
+            document.getElementById('s2_urgencyList').innerHTML = sortedByUrgency.slice(0, 30).map(pr => `
                 <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
                     <td class="px-3 py-2">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
-                    <td class="px-3 py-2">${pr['PR납기일'] || '-'}</td>
-                    <td class="px-3 py-2">${pr['실제잔여일수'] || '-'}일</td>
+                    <td class="px-3 py-2">${pr['PR납기일_변환'] || pr['PR납기일'] || '-'}</td>
+                    <td class="px-3 py-2 ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
                     <td class="px-3 py-2">
                         <span class="${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
                     </td>
