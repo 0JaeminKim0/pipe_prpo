@@ -1215,6 +1215,11 @@
             const container = document.getElementById('detailView');
             const estimatedPrice = pr['입찰예정가'] || 0;
             const quotedPrice = pr['Mock_견적금액'] || 0;
+            const exchangeRate = 1453;
+            const estimatedPriceUSD = Math.round(estimatedPrice / exchangeRate);
+            
+            // 초청협력회사 2~3개 랜덤 생성 (매칭업체 포함)
+            const randomVendors = pr['초청협력회사'] || generateRandomVendors(pr);
 
             container.innerHTML = `
                 <div class="space-y-4">
@@ -1241,7 +1246,7 @@
                             <div><span class="text-gray-500">입찰목적물</span><p class="font-medium">${pr['내역'] || '-'}</p></div>
                             <div><span class="text-gray-500">소싱그룹</span><p class="font-medium">${pr['소싱그룹'] || '-'}</p></div>
                             <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매원'] || '-'}</p></div>
-                            <div><span class="text-gray-500">시리즈호선</span><p class="font-medium">${(pr['자재번호'] || '').substring(0, 4)}</p></div>
+                            <div><span class="text-gray-500">시리즈호선</span><p class="font-medium">${(pr['자재번호'] || '').substring(0, 4) || '-'}</p></div>
                             <div><span class="text-gray-500">일반/긴급</span><p class="font-medium">${pr['긴급도_신호'] || ''} ${pr['긴급도'] || '-'}</p></div>
                         </div>
                     </div>
@@ -1251,9 +1256,48 @@
                         <h4 class="font-medium text-sm text-gray-700 mb-3">계약정보</h4>
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div><span class="text-gray-500">계약방식</span><p class="font-medium">${pr['계약방식'] || '-'}</p></div>
-                            <div><span class="text-gray-500">계약대상자선정</span><p class="font-medium">최저가</p></div>
+                            <div><span class="text-gray-500">계약대상자선정방식</span><p class="font-medium">최저가</p></div>
                             <div><span class="text-gray-500">단가계약여부</span><p class="font-medium">${pr['계약분류'] || '-'}</p></div>
                             <div><span class="text-gray-500">단가계약번호</span><p class="font-medium">${pr['단가계약번호'] || '-'}</p></div>
+                        </div>
+                    </div>
+
+                    <!-- 입찰조건 (신규) -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-sm text-gray-700 mb-3">입찰조건</h4>
+                        <div class="grid grid-cols-3 gap-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">조건 변경 가능</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">업체 선정 방식</span>
+                                <span class="font-medium">문서별</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">부분 입찰 가능</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">전자계약 여부</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">AVL 품목 여부</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -1263,17 +1307,29 @@
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div><span class="text-gray-500">접수기간</span><p class="font-medium">${pr['접수기간_일'] || 3}일 ${pr['긴급도'] === '긴급' ? '(긴급)' : ''}</p></div>
                             <div><span class="text-gray-500">기술평가대상</span><p class="font-medium">${pr['기술평가대상'] || 'N'}</p></div>
-                            <div><span class="text-gray-500">기술자료요구서</span><p class="font-medium">Y</p></div>
-                            <div><span class="text-gray-500">비밀유지서약</span><p class="font-medium">Y</p></div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">기술자료요구서</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">비밀유지서약 여부</span>
+                                <select class="text-xs border rounded px-2 py-1 bg-white">
+                                    <option value="Y" selected>Y</option>
+                                    <option value="N">N</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <!-- 금액정보 -->
                     <div class="bg-blue-50 rounded-lg p-4">
                         <h4 class="font-medium text-sm text-gray-700 mb-3">금액정보</h4>
-                        <div class="grid grid-cols-4 gap-4 text-center">
+                        <div class="grid grid-cols-3 gap-4 text-center mb-4">
                             <div>
-                                <p class="text-xs text-gray-500">입찰예정가</p>
+                                <p class="text-xs text-gray-500">입찰예정가(KRW)</p>
                                 <p class="text-lg font-bold text-blue-600">₩${estimatedPrice.toLocaleString()}</p>
                                 <p class="text-xs text-gray-500">${pr['예정가_산정방법'] || ''}</p>
                             </div>
@@ -1282,30 +1338,42 @@
                                 <p class="text-lg font-bold">₩${estimatedPrice.toLocaleString()}</p>
                             </div>
                             <div>
+                                <p class="text-xs text-gray-500">예산금액(USD)</p>
+                                <p class="text-lg font-bold text-green-600">$${estimatedPriceUSD.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center border-t pt-3">
+                            <div>
+                                <p class="text-xs text-gray-500">예산금액환율</p>
+                                <p class="font-medium">${exchangeRate.toLocaleString()}원</p>
+                            </div>
+                            <div>
                                 <p class="text-xs text-gray-500">요청수량</p>
-                                <p class="text-lg font-bold">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p>
+                                <p class="font-medium">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">총중량(KG)</p>
-                                <p class="text-lg font-bold">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p>
+                                <p class="font-medium">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- 협력회사 -->
                     <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">초청협력회사</h4>
+                        <h4 class="font-medium text-sm text-gray-700 mb-3">초청협력회사 <span class="text-xs text-gray-400">(2~3개 랜덤 선정)</span></h4>
                         <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" checked class="mr-2" ${pr['매칭업체명'] ? '' : 'disabled'}>
-                                <span>${pr['매칭업체명'] || '매칭 업체 없음'} ${pr['매칭업체명'] ? '(매칭업체)' : ''}</span>
-                            </label>
-                            ${pr['계약방식'] === '지명경쟁' ? `
+                            ${randomVendors.map((vendor, idx) => `
                                 <label class="flex items-center">
-                                    <input type="checkbox" class="mr-2">
-                                    <span class="text-gray-500">+ 업체 추가</span>
+                                    <input type="checkbox" checked class="mr-2">
+                                    <span>${vendor.name} ${vendor.isMatched ? '<span class="text-xs text-blue-600">(매칭업체)</span>' : ''}</span>
                                 </label>
+                            `).join('')}
+                            ${pr['계약방식'] === '지명경쟁' ? `
+                                <button class="text-sm text-blue-600 hover:underline mt-2">+ 업체 추가</button>
                             ` : ''}
+                        </div>
+                        <div class="mt-3 p-2 bg-gray-200 rounded text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>이전견적의뢰 최고평가협력사 누락 여부
                         </div>
                     </div>
 
@@ -1318,7 +1386,7 @@
                                 <p class="text-xs bg-white p-2 rounded border">${pr['계약방식_선정사유'] || '-'}</p>
                             </div>
                             <div>
-                                <p class="text-gray-500">입찰계획서 미승인</p>
+                                <p class="text-gray-500">입찰계획서 미승인 (${pr['미승인사유코드'] || '002_2'})</p>
                                 <p class="text-xs bg-white p-2 rounded border">${pr['미승인사유'] || '-'}</p>
                             </div>
                         </div>
@@ -1356,6 +1424,32 @@
                     </div>
                 </div>
             `;
+        }
+        
+        // 초청협력회사 2~3개 랜덤 생성
+        function generateRandomVendors(pr) {
+            const sampleVendors = [
+                '(주)대한배관', '삼성중공업', '현대스틸', '포스코건설',
+                '한화에어로스페이스', 'STX중공업', '대우조선해양', 'SK에코플랜트',
+                '두산중공업', 'GS건설', '한진중공업', '삼호중공업'
+            ];
+            
+            const vendors = [];
+            
+            // 매칭업체가 있으면 먼저 추가
+            if (pr['매칭업체명']) {
+                vendors.push({ name: pr['매칭업체명'], isMatched: true });
+            }
+            
+            // 랜덤으로 1~2개 추가 (총 2~3개가 되도록)
+            const count = pr['매칭업체명'] ? Math.floor(Math.random() * 2) + 1 : Math.floor(Math.random() * 2) + 2;
+            const shuffled = sampleVendors.filter(v => v !== pr['매칭업체명']).sort(() => 0.5 - Math.random());
+            
+            for (let i = 0; i < count && i < shuffled.length; i++) {
+                vendors.push({ name: shuffled[i], isMatched: false });
+            }
+            
+            return vendors;
         }
 
         // HITL Modal
