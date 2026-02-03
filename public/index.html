@@ -316,9 +316,10 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">PR번호</th>
-                                        <th class="px-3 py-2 text-left">계약분류</th>
-                                        <th class="px-3 py-2 text-left">단가계약번호</th>
+                                        <th class="px-2 py-2 text-left">PR번호</th>
+                                        <th class="px-2 py-2 text-left">자재번호</th>
+                                        <th class="px-2 py-2 text-left">자재내역</th>
+                                        <th class="px-2 py-2 text-left">계약분류</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s2_contractList"></tbody>
@@ -351,10 +352,11 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">PR번호</th>
-                                        <th class="px-3 py-2 text-left">납기일</th>
-                                        <th class="px-3 py-2 text-left">잔여일</th>
-                                        <th class="px-3 py-2 text-left">긴급도</th>
+                                        <th class="px-2 py-2 text-left">PR번호</th>
+                                        <th class="px-2 py-2 text-left">자재번호</th>
+                                        <th class="px-2 py-2 text-left">자재내역</th>
+                                        <th class="px-2 py-2 text-left">잔여일</th>
+                                        <th class="px-2 py-2 text-left">긴급도</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s2_urgencyList"></tbody>
@@ -397,9 +399,11 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">PR번호</th>
-                                        <th class="px-3 py-2 text-left">매칭업체</th>
-                                        <th class="px-3 py-2 text-left">최근발주단가</th>
+                                        <th class="px-2 py-2 text-left">PR번호</th>
+                                        <th class="px-2 py-2 text-left">자재번호</th>
+                                        <th class="px-2 py-2 text-left">자재내역</th>
+                                        <th class="px-2 py-2 text-left">매칭업체</th>
+                                        <th class="px-2 py-2 text-right">최근발주단가</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s3_supplierList"></tbody>
@@ -428,9 +432,11 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-3 py-2 text-left">PR번호</th>
-                                        <th class="px-3 py-2 text-left">발주방식</th>
-                                        <th class="px-3 py-2 text-left">선정사유</th>
+                                        <th class="px-2 py-2 text-left">PR번호</th>
+                                        <th class="px-2 py-2 text-left">자재번호</th>
+                                        <th class="px-2 py-2 text-left">자재내역</th>
+                                        <th class="px-2 py-2 text-left">발주방식</th>
+                                        <th class="px-2 py-2 text-left">선정사유</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s3_methodList"></tbody>
@@ -1121,13 +1127,14 @@
             
             document.getElementById('s2_contractList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
-                    <td class="px-3 py-2">
-                        <span class="px-2 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
+                    <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[120px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 15)}${(pr['자재내역']?.length > 15) ? '...' : ''}</td>
+                    <td class="px-2 py-2">
+                        <span class="px-1.5 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
                             ${pr['계약분류'] || '-'}
                         </span>
                     </td>
-                    <td class="px-3 py-2">${pr['단가계약번호'] || '-'}</td>
                 </tr>
             `).join('');
         }
@@ -1172,11 +1179,12 @@
             
             document.getElementById('s2_urgencyList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
-                    <td class="px-3 py-2">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
-                    <td class="px-3 py-2">${pr['PR납기일_변환'] || pr['PR납기일'] || '-'}</td>
-                    <td class="px-3 py-2 ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
-                    <td class="px-3 py-2">
-                        <span class="${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
+                    <td class="px-2 py-2 text-xs">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
+                    <td class="px-2 py-2">
+                        <span class="text-xs ${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
                     </td>
                 </tr>
             `).join('');
@@ -1238,9 +1246,11 @@
             
             document.getElementById('s3_supplierList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50 ${!pr['업체매칭여부'] ? 'bg-red-50' : ''}">
-                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
-                    <td class="px-3 py-2">${pr['매칭업체명'] || '<span class="text-red-500">신규필요</span>'}</td>
-                    <td class="px-3 py-2">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs">${pr['매칭업체명'] || '<span class="text-red-500">신규필요</span>'}</td>
+                    <td class="px-2 py-2 text-xs text-right">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
                 </tr>
             `).join('');
         }
@@ -1274,11 +1284,13 @@
             
             document.getElementById('s3_methodList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
-                    <td class="px-3 py-2">
-                        <span class="${pr['계약방식'] === '수의계약' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약방식'] || '-'}</span>
+                    <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['자재내역'] || ''}">${(pr['자재내역'] || '-').substring(0, 12)}${(pr['자재내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2">
+                        <span class="text-xs ${pr['계약방식'] === '수의계약' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약방식'] || '-'}</span>
                     </td>
-                    <td class="px-3 py-2 text-xs truncate max-w-xs">${(pr['계약방식_선정사유'] || '').substring(0, 30)}...</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['계약방식_선정사유'] || ''}">${(pr['계약방식_선정사유'] || '-').substring(0, 10)}${(pr['계약방식_선정사유']?.length > 10) ? '...' : ''}</td>
                 </tr>
             `).join('');
         }
