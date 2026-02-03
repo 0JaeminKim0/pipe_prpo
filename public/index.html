@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR→PO 자동화 AI Agent</title>
+    <title>PR→PO 자동화 AI Agent v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
@@ -20,17 +20,22 @@
         .sidebar-item.selected { @apply bg-blue-50 border-l-4 border-blue-600; }
         .tab-active { @apply bg-white border-b-2 border-blue-600 text-blue-600; }
         .tab-inactive { @apply bg-gray-100 text-gray-600 hover:bg-gray-200; }
-        .card-stat { @apply bg-white rounded-lg shadow p-6 text-center; }
+        .card-stat { @apply bg-white rounded-lg shadow p-4 text-center; }
+        .step-nav { @apply flex flex-col items-center cursor-pointer transition-all; }
+        .step-nav:hover .step-circle { @apply ring-2 ring-blue-300; }
+        .step-circle { @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all; }
+        .step-label { @apply text-xs mt-1 text-center max-w-[60px] leading-tight; }
+        .mini-card { @apply bg-white rounded shadow p-3 text-center; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div id="app">
         <!-- Header -->
         <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <span class="text-2xl">🤖</span>
-                    <h1 class="text-xl font-bold text-gray-800">PR→PO 자동화 Agent</h1>
+                    <h1 class="text-xl font-bold text-gray-800">PR→PO 자동화 Agent <span class="text-sm font-normal text-gray-500">v2</span></h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-600">기준일: 2026-01-01</span>
@@ -39,36 +44,101 @@
             </div>
         </header>
 
-        <!-- Progress Steps -->
+        <!-- 8-Step Progress Navigation -->
         <div class="bg-white border-b">
-            <div class="max-w-7xl mx-auto px-4 py-6">
-                <div class="flex items-center justify-center space-x-4">
-                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="1" onclick="navigateToStep(1)">
-                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-active">
-                            <i class="fas fa-upload"></i>
-                        </div>
-                        <span class="ml-2 text-sm font-medium">PR 업로드</span>
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <!-- Step 1: PR 접수 -->
+                    <div class="step-nav" data-step="1" onclick="navigateToStep(1)">
+                        <div class="step-circle step-active" id="step-circle-1">1</div>
+                        <span class="step-label">PR 접수</span>
                     </div>
-                    <div class="w-12 h-1 bg-gray-300 step-line" data-line="1"></div>
-                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="2" onclick="navigateToStep(2)">
-                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <span class="ml-2 text-sm font-medium">AI 처리</span>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="1"></div>
+                    
+                    <!-- Step 2: 계약/긴급도 -->
+                    <div class="step-nav" data-step="2" onclick="navigateToStep(2)">
+                        <div class="step-circle step-pending" id="step-circle-2">2</div>
+                        <span class="step-label">계약/긴급도</span>
                     </div>
-                    <div class="w-12 h-1 bg-gray-300 step-line" data-line="2"></div>
-                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="3" onclick="navigateToStep(3)">
-                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <span class="ml-2 text-sm font-medium">견적의뢰</span>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="2"></div>
+                    
+                    <!-- Step 3: 업체/발주 -->
+                    <div class="step-nav" data-step="3" onclick="navigateToStep(3)">
+                        <div class="step-circle step-pending" id="step-circle-3">3</div>
+                        <span class="step-label">업체/발주</span>
                     </div>
-                    <div class="w-12 h-1 bg-gray-300 step-line" data-line="3"></div>
-                    <div class="step-item flex items-center cursor-pointer hover:opacity-80 transition-opacity" data-step="4" onclick="navigateToStep(4)">
-                        <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending">
-                            <i class="fas fa-check-circle"></i>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="3"></div>
+                    
+                    <!-- Step 4: 견적의뢰 -->
+                    <div class="step-nav" data-step="4" onclick="navigateToStep(4)">
+                        <div class="step-circle step-pending" id="step-circle-4">4</div>
+                        <span class="step-label">견적의뢰</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="4"></div>
+                    
+                    <!-- Step 5: HITL 검토 -->
+                    <div class="step-nav" data-step="5" onclick="navigateToStep(5)">
+                        <div class="step-circle step-pending" id="step-circle-5">5</div>
+                        <span class="step-label">HITL</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="5"></div>
+                    
+                    <!-- Step 6: 예정가 -->
+                    <div class="step-nav" data-step="6" onclick="navigateToStep(6)">
+                        <div class="step-circle step-pending" id="step-circle-6">6</div>
+                        <span class="step-label">예정가</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="6"></div>
+                    
+                    <!-- Step 7: 견적수신 -->
+                    <div class="step-nav" data-step="7" onclick="navigateToStep(7)">
+                        <div class="step-circle step-pending" id="step-circle-7">7</div>
+                        <span class="step-label">견적수신</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-gray-300 mx-1 step-line" data-line="7"></div>
+                    
+                    <!-- Step 8: 견적비교 -->
+                    <div class="step-nav" data-step="8" onclick="navigateToStep(8)">
+                        <div class="step-circle step-pending" id="step-circle-8">8</div>
+                        <span class="step-label">견적비교</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Dashboard (shows during processing) -->
+        <div id="processingDashboard" class="hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div class="max-w-7xl mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-spinner fa-spin text-xl"></i>
+                        <div>
+                            <p class="font-medium" id="dashboardStatus">AI 처리 중...</p>
+                            <p class="text-sm text-blue-100" id="dashboardStep">데이터 검증</p>
                         </div>
-                        <span class="ml-2 text-sm font-medium">최종검토</span>
+                    </div>
+                    <div class="flex items-center space-x-6 text-sm">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold" id="dashTotal">0</p>
+                            <p class="text-blue-100">처리 건수</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-green-300" id="dashAuto">0</p>
+                            <p class="text-blue-100">자동완료</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-orange-300" id="dashHITL">0</p>
+                            <p class="text-blue-100">HITL</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold" id="dashLLM">0</p>
+                            <p class="text-blue-100">LLM 호출</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="w-full bg-blue-400 rounded-full h-2">
+                        <div id="dashProgress" class="bg-white h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -76,425 +146,260 @@
 
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 py-6">
-            <!-- Step 1: Upload -->
+            
+            <!-- ======================= STEP 1: PR 접수 검토 ======================= -->
             <div id="step1" class="step-content">
-                <div class="bg-white rounded-lg shadow p-8">
-                    <h2 class="text-xl font-bold text-center mb-6">📥 PR 데이터를 업로드하세요</h2>
-                    
-                    <!-- Drop Zone -->
-                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                        <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv" class="hidden">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-600">파일을 드래그하거나 클릭하여 업로드</p>
-                        <p class="text-sm text-gray-400 mt-2">📄 .xlsx, .xls 지원</p>
-                    </div>
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Left: Upload Panel -->
+                    <div class="col-span-2 bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-bold mb-4">📥 PR 접수 검토</h2>
+                        
+                        <!-- Upload Area -->
+                        <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                            <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv" class="hidden">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                            <p class="text-gray-600">파일을 드래그하거나 클릭하여 업로드</p>
+                            <p class="text-sm text-gray-400 mt-1">📄 .xlsx, .xls 지원</p>
+                        </div>
 
-                    <!-- Uploaded Files -->
-                    <div id="uploadedFiles" class="mt-6 hidden">
-                        <h3 class="text-sm font-medium text-gray-700 mb-3">📁 업로드된 파일</h3>
-                        <div id="fileList" class="space-y-2"></div>
-                    </div>
+                        <!-- Quick Load -->
+                        <div class="mt-4 text-center">
+                            <button id="loadSampleBtn" class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                                📂 PR 불러오기
+                            </button>
+                            <p class="text-xs text-gray-400 mt-2">3개 Excel 파일에서 데이터 로드</p>
+                        </div>
 
-                    <!-- Data Summary -->
-                    <div id="dataSummary" class="mt-6 hidden">
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="grid grid-cols-3 gap-4 text-center">
-                                <div>
-                                    <p class="text-2xl font-bold text-blue-600" id="prCount">0</p>
-                                    <p class="text-sm text-gray-600">PR 건수</p>
-                                </div>
-                                <div>
-                                    <p class="text-2xl font-bold text-green-600" id="poCount">0</p>
-                                    <p class="text-sm text-gray-600">발주실적</p>
-                                </div>
-                                <div>
-                                    <p class="text-2xl font-bold text-purple-600" id="pzafCount">0</p>
-                                    <p class="text-sm text-gray-600">PZAF 자재</p>
-                                </div>
-                            </div>
+                        <!-- Uploaded Files -->
+                        <div id="uploadedFiles" class="mt-4 hidden">
+                            <h3 class="text-sm font-medium text-gray-700 mb-2">📁 업로드된 파일</h3>
+                            <div id="fileList" class="space-y-1 text-sm"></div>
                         </div>
                     </div>
 
-                    <!-- Quick Load PR Data Button -->
-                    <div class="mt-6 text-center">
-                        <button id="loadSampleBtn" class="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors text-lg shadow-md">
-                            📂 PR 불러오기
-                        </button>
-                        <p class="text-xs text-gray-500 mt-3">3개 Excel 파일에서 PR 데이터를 불러옵니다</p>
-                        <p class="text-xs text-gray-400">• DR_1P0K02_25.10~12.구매요청진행현황.XLSX</p>
-                        <p class="text-xs text-gray-400">• DR_1P0M01_25.10~12.구매요청진행현황.XLSX</p>
-                        <p class="text-xs text-gray-400">• DR_PZAF 발주실적 상세_2025_2026.01.29_11.11.51.xlsx</p>
-                    </div>
+                    <!-- Right: Summary Panel -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-4">📊 데이터 요약</h3>
+                        
+                        <div id="dataSummary" class="space-y-4">
+                            <div class="text-center py-8 text-gray-400">
+                                <i class="fas fa-inbox text-3xl mb-2"></i>
+                                <p>데이터를 불러오세요</p>
+                            </div>
+                        </div>
 
-                    <!-- Start Button -->
-                    <div class="mt-8 text-center">
-                        <button id="startProcessBtn" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors" disabled>
-                            🚀 AI 처리 시작
-                        </button>
+                        <div id="summaryLoaded" class="hidden space-y-4">
+                            <div class="mini-card border-l-4 border-blue-500">
+                                <p class="text-2xl font-bold text-blue-600" id="prCount">0</p>
+                                <p class="text-xs text-gray-600">PR 건수</p>
+                            </div>
+                            <div class="mini-card border-l-4 border-green-500">
+                                <p class="text-2xl font-bold text-green-600" id="poCount">0</p>
+                                <p class="text-xs text-gray-600">발주실적</p>
+                            </div>
+                            <div class="mini-card border-l-4 border-purple-500">
+                                <p class="text-2xl font-bold text-purple-600" id="pzafCount">0</p>
+                                <p class="text-xs text-gray-600">PZAF 자재</p>
+                            </div>
+
+                            <button id="startProcessBtn" class="w-full mt-4 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors" disabled>
+                                🚀 AI 처리 시작
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Step 2: Processing (Real-time) -->
-            <div id="step2" class="step-content hidden">
-                <div class="bg-white rounded-lg shadow p-8">
-                    <h2 class="text-xl font-bold mb-6">🤖 AI Agent가 PR을 분석하고 있습니다...</h2>
-                    
-                    <!-- Progress Bar -->
-                    <div class="mb-6">
-                        <div class="flex justify-between text-sm text-gray-600 mb-2">
-                            <span id="currentStep">데이터 검증 중...</span>
-                            <span id="progressPercent">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div id="progressBar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Processing Steps Detail -->
-                    <div class="border rounded-lg p-4 mb-6">
-                        <div id="processingSteps" class="space-y-3">
-                            <div class="step-row flex items-center" data-pstep="1">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">1</span>
-                                </span>
-                                <span class="flex-1">Step 1. 데이터 검증</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="2">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">2</span>
-                                </span>
-                                <span class="flex-1">Step 2. 계약 분류</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="3">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">3</span>
-                                </span>
-                                <span class="flex-1">Step 3. 긴급도 분석</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="4">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">4</span>
-                                </span>
-                                <span class="flex-1">Step 4. 납품업체 매칭</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="5">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">5</span>
-                                </span>
-                                <span class="flex-1">Step 5. 입찰예정가 산정 (LLM)</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="6">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">6</span>
-                                </span>
-                                <span class="flex-1">Step 6. 견적의뢰서 생성</span>
-                                <span class="step-result text-sm text-gray-500"></span>
-                            </div>
-                            <div class="step-row flex items-center" data-pstep="7">
-                                <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 step-icon">
-                                    <span class="step-num">7</span>
-                                </span>
-                                <span class="flex-1">Step 7. 적정성 검토 (LLM)</span>
-                                <span class="step-result text-sm text-gray-500"></span>
+                <!-- Validation Results (after processing) -->
+                <div id="validationResults" class="mt-6 hidden">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold">📋 검증 결과</h3>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i><span id="validCount2">0</span>건 유효</span>
+                                <span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i><span id="invalidCount2">0</span>건 누락</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Log Window -->
-                    <div class="bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto">
-                        <h3 class="text-green-400 text-sm font-mono mb-2">💬 AI 실시간 로그</h3>
-                        <div id="logContainer" class="text-sm font-mono space-y-1"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2-1: AI Processing Results (Step별 상세) -->
-            <div id="step2-1" class="step-content hidden">
-                <div class="bg-white rounded-lg shadow">
-                    <!-- Header -->
-                    <div class="p-6 border-b">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-xl font-bold">✅ AI 처리 완료</h2>
-                            <span class="text-gray-600">총 <span id="resultTotalPR">0</span>건 → <span id="resultProcessedPR">0</span>건 처리</span>
-                        </div>
-                    </div>
-
-                    <!-- Tab Navigation -->
-                    <div class="border-b">
-                        <div class="flex">
-                            <button class="result-tab tab-active px-6 py-3 font-medium" data-tab="validation">
-                                데이터검증 <span class="validation-warning text-red-500 ml-1 hidden">⚠️</span>
-                            </button>
-                            <button class="result-tab tab-inactive px-6 py-3 font-medium" data-tab="contract">
-                                계약분류
-                            </button>
-                            <button class="result-tab tab-inactive px-6 py-3 font-medium" data-tab="urgency">
-                                긴급도
-                            </button>
-                            <button class="result-tab tab-inactive px-6 py-3 font-medium" data-tab="supplier">
-                                업체매칭 <span class="supplier-warning text-red-500 ml-1 hidden">⚠️</span>
-                            </button>
-                            <button class="result-tab tab-inactive px-6 py-3 font-medium" data-tab="price">
-                                예정가산정 <span class="price-warning text-red-500 ml-1 hidden">⚠️</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Tab Contents -->
-                    <div class="p-6">
-                        <!-- Tab 1: Data Validation -->
-                        <div id="tab-validation" class="tab-content">
-                            <h3 class="text-lg font-bold mb-4">📋 데이터 검증 결과</h3>
-                            
-                            <!-- Summary Cards -->
-                            <div class="grid grid-cols-2 gap-4 mb-6">
-                                <div class="card-stat border-l-4 border-green-500">
-                                    <p class="text-3xl font-bold text-green-600" id="validCount">0</p>
-                                    <p class="text-gray-600">✅ 유효</p>
-                                </div>
-                                <div class="card-stat border-l-4 border-red-500">
-                                    <p class="text-3xl font-bold text-red-600" id="invalidCount">0</p>
-                                    <p class="text-gray-600">⚠️ 누락</p>
-                                </div>
+                        
+                        <!-- Invalid PR Section -->
+                        <div id="invalidSection" class="hidden">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-sm font-medium text-red-600">⚠️ 누락 PR (이메일 발송 필요)</h4>
+                                <button onclick="openBatchEmailModal()" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                                    <i class="fas fa-envelope mr-1"></i>일괄 발송
+                                </button>
                             </div>
-
-                            <!-- Invalid PR List -->
-                            <div id="invalidPRSection" class="hidden">
-                                <div class="flex justify-between items-center mb-3">
-                                    <h4 class="font-medium">⚠️ 누락 PR (이메일 발송 필요)</h4>
-                                    <button onclick="openBatchEmailModal()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-                                        <i class="fas fa-envelope mr-1"></i>일괄 발송
-                                    </button>
-                                </div>
-                                <div class="border rounded-lg overflow-hidden max-h-80 overflow-y-auto">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-50 sticky top-0">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left">PR번호</th>
-                                                <th class="px-4 py-3 text-left">자재번호</th>
-                                                <th class="px-4 py-3 text-left">누락항목</th>
-                                                <th class="px-4 py-3 text-left">담당자</th>
-                                                <th class="px-4 py-3 text-left">액션</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="invalidPRList"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab 2: Contract Classification -->
-                        <div id="tab-contract" class="tab-content hidden">
-                            <h3 class="text-lg font-bold mb-4">📋 계약 분류 결과</h3>
-                            
-                            <!-- Summary Cards -->
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="card-stat">
-                                    <p class="text-3xl font-bold text-blue-600" id="standardCount">0</p>
-                                    <p class="text-gray-600">표준단가</p>
-                                    <p class="text-xs text-gray-400" id="standardPercent">0%</p>
-                                </div>
-                                <div class="card-stat">
-                                    <p class="text-3xl font-bold text-purple-600" id="nonStandardCount">0</p>
-                                    <p class="text-gray-600">비표준단가</p>
-                                    <p class="text-xs text-gray-400" id="nonStandardPercent">0%</p>
-                                </div>
-                                <div class="card-stat">
-                                    <p class="text-3xl font-bold text-orange-600" id="naCount">0</p>
-                                    <p class="text-gray-600">견적대상(NA)</p>
-                                    <p class="text-xs text-gray-400" id="naPercent">0%</p>
-                                </div>
-                            </div>
-
-                            <!-- Contract Table -->
-                            <div class="border rounded-lg overflow-hidden">
+                            <div class="border rounded overflow-hidden max-h-48 overflow-y-auto">
                                 <table class="w-full text-sm">
-                                    <thead class="bg-gray-50">
+                                    <thead class="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th class="px-4 py-3 text-left">PR번호</th>
-                                            <th class="px-4 py-3 text-left">자재번호</th>
-                                            <th class="px-4 py-3 text-left">계약분류</th>
-                                            <th class="px-4 py-3 text-left">단가계약번호</th>
+                                            <th class="px-3 py-2 text-left">PR번호</th>
+                                            <th class="px-3 py-2 text-left">자재번호</th>
+                                            <th class="px-3 py-2 text-left">누락항목</th>
+                                            <th class="px-3 py-2 text-left">담당자</th>
+                                            <th class="px-3 py-2 text-left">액션</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="contractList"></tbody>
+                                    <tbody id="invalidPRList"></tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Tab 3: Urgency Analysis -->
-                        <div id="tab-urgency" class="tab-content hidden">
-                            <h3 class="text-lg font-bold mb-4">📋 긴급도 분석 결과 <span class="text-sm font-normal text-gray-500">기준일: 2026-01-01</span></h3>
-                            
-                            <!-- Summary Cards -->
-                            <div class="grid grid-cols-3 gap-4 mb-6">
-                                <div class="card-stat border-l-4 border-red-500">
-                                    <p class="text-3xl font-bold text-red-600" id="urgentCount">0</p>
-                                    <p class="text-gray-600">🔴 긴급 (≤2일)</p>
-                                    <p class="text-xs text-gray-400" id="urgentPercent">0%</p>
-                                </div>
-                                <div class="card-stat border-l-4 border-yellow-500">
-                                    <p class="text-3xl font-bold text-yellow-600" id="normalCount">0</p>
-                                    <p class="text-gray-600">🟡 일반 (3~5일)</p>
-                                    <p class="text-xs text-gray-400" id="normalPercent">0%</p>
-                                </div>
-                                <div class="card-stat border-l-4 border-green-500">
-                                    <p class="text-3xl font-bold text-green-600" id="flexibleCount">0</p>
-                                    <p class="text-gray-600">🟢 여유 (>5일)</p>
-                                    <p class="text-xs text-gray-400" id="flexiblePercent">0%</p>
-                                </div>
-                            </div>
-
-                            <!-- Urgent PR List -->
-                            <div class="mb-4">
-                                <h4 class="font-medium mb-3">⚠️ 긴급 처리 필요 PR</h4>
-                                <div class="border rounded-lg overflow-hidden max-h-64 overflow-y-auto">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-50 sticky top-0">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left">PR번호</th>
-                                                <th class="px-4 py-3 text-left">납기일</th>
-                                                <th class="px-4 py-3 text-left">L/T</th>
-                                                <th class="px-4 py-3 text-left">잔여일</th>
-                                                <th class="px-4 py-3 text-left">긴급도</th>
-                                                <th class="px-4 py-3 text-left">자재내역</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="urgentList"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div id="criticalAlert" class="bg-red-50 border border-red-200 rounded-lg p-4 hidden">
-                                <p class="text-red-700">💡 잔여일 0일 이하 PR: <span id="criticalCount">0</span>건 → 즉시 처리 필요</p>
-                            </div>
+                        <div class="mt-4 flex justify-end">
+                            <button onclick="goToStep(2)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                다음: 계약/긴급도 확인 →
+                            </button>
                         </div>
-
-                        <!-- Tab 4: Supplier Matching -->
-                        <div id="tab-supplier" class="tab-content hidden">
-                            <h3 class="text-lg font-bold mb-4">📋 납품업체 매칭 결과</h3>
-                            
-                            <!-- Summary Cards -->
-                            <div class="grid grid-cols-2 gap-4 mb-6">
-                                <div class="card-stat border-l-4 border-green-500">
-                                    <p class="text-3xl font-bold text-green-600" id="matchedCount">0</p>
-                                    <p class="text-gray-600">✅ 매칭 성공</p>
-                                    <p class="text-xs text-gray-400" id="matchedPercent">0%</p>
-                                </div>
-                                <div class="card-stat border-l-4 border-red-500">
-                                    <p class="text-3xl font-bold text-red-600" id="unmatchedCount">0</p>
-                                    <p class="text-gray-600">⚠️ 매칭 실패</p>
-                                    <p class="text-xs text-gray-400" id="unmatchedPercent">0%</p>
-                                </div>
-                            </div>
-
-                            <!-- Unmatched PR List -->
-                            <div id="unmatchedSection" class="mb-6 hidden">
-                                <h4 class="font-medium mb-3">⚠️ 매칭 실패 PR (신규 업체 선정 필요)</h4>
-                                <div class="border rounded-lg overflow-hidden">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left">PR번호</th>
-                                                <th class="px-4 py-3 text-left">자재번호</th>
-                                                <th class="px-4 py-3 text-left">자재내역</th>
-                                                <th class="px-4 py-3 text-left">매칭결과</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="unmatchedList"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Matched PR List -->
-                            <div>
-                                <h4 class="font-medium mb-3">✅ 매칭 성공 PR</h4>
-                                <div class="border rounded-lg overflow-hidden max-h-64 overflow-y-auto">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-50 sticky top-0">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left">PR번호</th>
-                                                <th class="px-4 py-3 text-left">자재번호</th>
-                                                <th class="px-4 py-3 text-left">매칭업체</th>
-                                                <th class="px-4 py-3 text-left">최근발주단가</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="matchedList"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tab 5: Price Estimation -->
-                        <div id="tab-price" class="tab-content hidden">
-                            <h3 class="text-lg font-bold mb-4">📋 입찰예정가 산정 결과</h3>
-                            
-                            <!-- Summary Cards -->
-                            <div class="grid grid-cols-4 gap-4 mb-6">
-                                <div class="card-stat">
-                                    <p class="text-2xl font-bold text-blue-600" id="price1Count">0</p>
-                                    <p class="text-gray-600 text-sm">자재+내역 일치</p>
-                                    <p class="text-xs text-gray-400" id="price1Percent">0%</p>
-                                </div>
-                                <div class="card-stat">
-                                    <p class="text-2xl font-bold text-green-600" id="price2Count">0</p>
-                                    <p class="text-gray-600 text-sm">그룹 평균가</p>
-                                    <p class="text-xs text-gray-400" id="price2Percent">0%</p>
-                                </div>
-                                <div class="card-stat">
-                                    <p class="text-2xl font-bold text-purple-600" id="price3Count">0</p>
-                                    <p class="text-gray-600 text-sm">🧠 LLM 산정</p>
-                                    <p class="text-xs text-gray-400" id="price3Percent">0%</p>
-                                </div>
-                                <div class="card-stat border-l-4 border-orange-500">
-                                    <p class="text-2xl font-bold text-orange-600" id="price4Count">0</p>
-                                    <p class="text-gray-600 text-sm">⚠️ 기본값</p>
-                                    <p class="text-xs text-gray-400" id="price4Percent">0%</p>
-                                </div>
-                            </div>
-
-                            <!-- Special Cases -->
-                            <div id="priceSpecialSection" class="mb-6 hidden">
-                                <h4 class="font-medium mb-3">⚠️ 특이사항 PR (LLM 산정 / 기본값 적용)</h4>
-                                <div class="border rounded-lg overflow-hidden">
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left">PR번호</th>
-                                                <th class="px-4 py-3 text-left">자재내역</th>
-                                                <th class="px-4 py-3 text-left">산정방법</th>
-                                                <th class="px-4 py-3 text-left">예정가</th>
-                                                <th class="px-4 py-3 text-left">신뢰도</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="priceSpecialList"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div id="priceDefaultAlert" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hidden">
-                                <p class="text-yellow-700">💡 기본값 적용 <span id="defaultPriceCount">0</span>건 → 담당자 예정가 직접 입력 권장</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="p-6 border-t bg-gray-50 flex justify-end">
-                        <button onclick="goToStep(3)" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
-                            다음: 견적의뢰 생성 →
-                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 3: Quotation Management -->
+            <!-- ======================= STEP 2: 계약/긴급도 확인 ======================= -->
+            <div id="step2" class="step-content hidden">
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Left: 계약분류 -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-4">📋 계약 분류</h3>
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="mini-card">
+                                <p class="text-xl font-bold text-blue-600" id="s2_standard">0</p>
+                                <p class="text-xs text-gray-600">표준단가</p>
+                            </div>
+                            <div class="mini-card">
+                                <p class="text-xl font-bold text-purple-600" id="s2_nonStandard">0</p>
+                                <p class="text-xs text-gray-600">비표준단가</p>
+                            </div>
+                            <div class="mini-card">
+                                <p class="text-xl font-bold text-orange-600" id="s2_na">0</p>
+                                <p class="text-xs text-gray-600">견적대상</p>
+                            </div>
+                        </div>
+                        <div class="border rounded max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">PR번호</th>
+                                        <th class="px-3 py-2 text-left">계약분류</th>
+                                        <th class="px-3 py-2 text-left">단가계약번호</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s2_contractList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: 긴급도 분석 -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-4">⏰ 긴급도 분석 <span class="text-xs font-normal text-gray-500">기준일: 2026-01-01</span></h3>
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="mini-card border-l-4 border-red-500">
+                                <p class="text-xl font-bold text-red-600" id="s2_urgent">0</p>
+                                <p class="text-xs text-gray-600">🔴 긴급</p>
+                            </div>
+                            <div class="mini-card border-l-4 border-yellow-500">
+                                <p class="text-xl font-bold text-yellow-600" id="s2_normal">0</p>
+                                <p class="text-xs text-gray-600">🟡 일반</p>
+                            </div>
+                            <div class="mini-card border-l-4 border-green-500">
+                                <p class="text-xl font-bold text-green-600" id="s2_flexible">0</p>
+                                <p class="text-xs text-gray-600">🟢 여유</p>
+                            </div>
+                        </div>
+                        <div class="border rounded max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">PR번호</th>
+                                        <th class="px-3 py-2 text-left">납기일</th>
+                                        <th class="px-3 py-2 text-left">잔여일</th>
+                                        <th class="px-3 py-2 text-left">긴급도</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s2_urgencyList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(1)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(3)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 업체/발주방식 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 3: 업체/발주방식 판단 ======================= -->
             <div id="step3" class="step-content hidden">
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Left: 업체 매칭 -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-4">🏢 납품업체 매칭</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="mini-card border-l-4 border-green-500">
+                                <p class="text-xl font-bold text-green-600" id="s3_matched">0</p>
+                                <p class="text-xs text-gray-600">✅ 매칭성공</p>
+                            </div>
+                            <div class="mini-card border-l-4 border-red-500">
+                                <p class="text-xl font-bold text-red-600" id="s3_unmatched">0</p>
+                                <p class="text-xs text-gray-600">⚠️ 신규업체필요</p>
+                            </div>
+                        </div>
+                        <div class="border rounded max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">PR번호</th>
+                                        <th class="px-3 py-2 text-left">매칭업체</th>
+                                        <th class="px-3 py-2 text-left">최근발주단가</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s3_supplierList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: 발주방식 -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="font-bold mb-4">📝 발주방식 판단</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="mini-card">
+                                <p class="text-xl font-bold text-blue-600" id="s3_direct">0</p>
+                                <p class="text-xs text-gray-600">수의계약</p>
+                            </div>
+                            <div class="mini-card">
+                                <p class="text-xl font-bold text-purple-600" id="s3_bidding">0</p>
+                                <p class="text-xs text-gray-600">지명경쟁</p>
+                            </div>
+                        </div>
+                        <div class="border rounded max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">PR번호</th>
+                                        <th class="px-3 py-2 text-left">발주방식</th>
+                                        <th class="px-3 py-2 text-left">선정사유</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s3_methodList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(2)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(4)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 견적의뢰 생성 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 4: 견적의뢰 생성 ======================= -->
+            <div id="step4" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow">
                     <!-- Header -->
                     <div class="p-4 border-b">
@@ -525,22 +430,20 @@
                     </div>
 
                     <!-- Main Content: PR List + Detail -->
-                    <div class="flex" style="min-height: 600px;">
+                    <div class="flex" style="min-height: 500px;">
                         <!-- Left: PR List -->
                         <div class="w-1/3 border-r">
-                            <div id="prList" class="overflow-y-auto" style="max-height: 550px;"></div>
-                            <div class="p-4 border-t bg-gray-50">
-                                <div class="text-sm text-gray-600">
-                                    <p>✅ 자동완료: <span id="autoCompleteCount">0</span>건</p>
-                                    <p>⚠️ 검토필요: <span id="needReviewCount">0</span>건</p>
-                                </div>
+                            <div id="prList" class="overflow-y-auto" style="max-height: 450px;"></div>
+                            <div class="p-3 border-t bg-gray-50 text-sm">
+                                <p>✅ 자동완료: <span id="autoCompleteCount">0</span>건</p>
+                                <p>⚠️ 검토필요: <span id="needReviewCount">0</span>건</p>
                             </div>
                         </div>
 
-                        <!-- Right: Detail View (SRM Format) -->
-                        <div class="w-2/3 overflow-y-auto" style="max-height: 600px;">
+                        <!-- Right: Detail View -->
+                        <div class="w-2/3 overflow-y-auto" style="max-height: 500px;">
                             <div id="detailView" class="p-6">
-                                <div class="text-center text-gray-500 py-20">
+                                <div class="text-center text-gray-500 py-16">
                                     <i class="fas fa-file-alt text-4xl mb-4"></i>
                                     <p>PR을 선택하면 견적의뢰 상세 정보가 표시됩니다</p>
                                 </div>
@@ -548,71 +451,241 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Step 4: Final Report -->
-            <div id="step4" class="step-content hidden">
-                <div class="bg-white rounded-lg shadow p-8">
-                    <div class="text-center mb-8">
-                        <span class="text-6xl">🎉</span>
-                        <h2 class="text-2xl font-bold mt-4">처리 완료</h2>
-                        <p class="text-gray-600 mt-2" id="totalProcessed">0건 처리 완료</p>
-                    </div>
-
-                    <!-- Summary Stats -->
-                    <div class="grid grid-cols-2 gap-6 mb-8">
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="font-bold mb-4">처리 현황</h3>
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span>자동처리</span>
-                                    <span class="font-bold text-green-600" id="finalAutoCount">0건</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div id="autoBar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>HITL 검토</span>
-                                    <span class="font-bold text-orange-600" id="finalHitlCount">0건</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div id="hitlBar" class="bg-orange-500 h-2 rounded-full" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <h3 class="font-bold mb-4">상세 현황</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-600">긴급도</p>
-                                    <p class="text-red-600">🔴 긴급: <span id="finalUrgent">0</span>건</p>
-                                    <p class="text-yellow-600">🟡 일반: <span id="finalNormal">0</span>건</p>
-                                    <p class="text-green-600">🟢 여유: <span id="finalFlexible">0</span>건</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">AI 처리 통계</p>
-                                    <p>LLM 호출: <span id="finalLlmCalls">0</span>회</p>
-                                    <p>처리 시간: <span id="finalTime">0</span>초</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex justify-center space-x-4">
-                        <button onclick="downloadExcel()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-                            📥 Excel 다운로드
-                        </button>
-                        <button onclick="goToStep(3)" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
-                            📋 견적의뢰 관리
-                        </button>
-                        <button onclick="batchApprove()" class="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700">
-                            🚀 SRM 일괄 전송
-                        </button>
-                    </div>
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(3)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(5)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: HITL 검토 →
+                    </button>
                 </div>
             </div>
+
+            <!-- ======================= STEP 5: HITL 검토 ======================= -->
+            <div id="step5" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">⚠️ HITL (Human-in-the-Loop) 검토</h2>
+                        <div class="text-sm">
+                            <span class="text-orange-600 font-medium"><span id="hitlTotalCount">0</span>건</span> 검토 필요
+                        </div>
+                    </div>
+
+                    <div id="hitlList" class="space-y-4">
+                        <!-- HITL items will be rendered here -->
+                    </div>
+
+                    <div id="noHitlMessage" class="text-center py-12 text-gray-500 hidden">
+                        <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                        <p class="text-lg">검토가 필요한 항목이 없습니다.</p>
+                        <p class="text-sm">모든 PR이 자동으로 처리되었습니다.</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(4)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(6)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 입찰예정가 산정 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 6: 입찰예정가 산정 ======================= -->
+            <div id="step6" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-lg font-bold mb-4">💰 입찰예정가 산정</h2>
+
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="mini-card">
+                            <p class="text-xl font-bold text-blue-600" id="s6_exact">0</p>
+                            <p class="text-xs text-gray-600">자재+내역 일치</p>
+                        </div>
+                        <div class="mini-card">
+                            <p class="text-xl font-bold text-green-600" id="s6_group">0</p>
+                            <p class="text-xs text-gray-600">그룹 평균</p>
+                        </div>
+                        <div class="mini-card">
+                            <p class="text-xl font-bold text-purple-600" id="s6_llm">0</p>
+                            <p class="text-xs text-gray-600">🧠 LLM 산정</p>
+                        </div>
+                        <div class="mini-card border-l-4 border-orange-500">
+                            <p class="text-xl font-bold text-orange-600" id="s6_default">0</p>
+                            <p class="text-xs text-gray-600">⚠️ 기본값</p>
+                        </div>
+                    </div>
+
+                    <div class="border rounded max-h-80 overflow-y-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">PR번호</th>
+                                    <th class="px-3 py-2 text-left">자재내역</th>
+                                    <th class="px-3 py-2 text-left">산정방법</th>
+                                    <th class="px-3 py-2 text-right">입찰예정가</th>
+                                    <th class="px-3 py-2 text-left">신뢰도</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s6_priceList"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="priceAlert" class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 hidden">
+                        <i class="fas fa-info-circle mr-1"></i>기본값 적용 <span id="defaultCount">0</span>건 → 담당자 예정가 직접 입력 권장
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(5)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(7)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 견적 수신 확인 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 7: 견적 수신 확인 (Mock) ======================= -->
+            <div id="step7" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">📬 견적 수신 확인</h2>
+                        <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="mini-card border-l-4 border-green-500">
+                            <p class="text-2xl font-bold text-green-600" id="s7_received">0</p>
+                            <p class="text-xs text-gray-600">✅ 견적 수신</p>
+                        </div>
+                        <div class="mini-card border-l-4 border-yellow-500">
+                            <p class="text-2xl font-bold text-yellow-600" id="s7_pending">0</p>
+                            <p class="text-xs text-gray-600">⏳ 대기중</p>
+                        </div>
+                        <div class="mini-card border-l-4 border-red-500">
+                            <p class="text-2xl font-bold text-red-600" id="s7_overdue">0</p>
+                            <p class="text-xs text-gray-600">🔴 미응답</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <button onclick="mockOpenQuotes()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                📭 견적 오픈
+                            </button>
+                            <button onclick="sendReminderEmails()" class="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm">
+                                📧 독려메일 발송
+                            </button>
+                        </div>
+                        <span class="text-sm text-gray-500">접수기한: 2026-01-03</span>
+                    </div>
+
+                    <div class="border rounded max-h-72 overflow-y-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">PR번호</th>
+                                    <th class="px-3 py-2 text-left">업체명</th>
+                                    <th class="px-3 py-2 text-left">견적상태</th>
+                                    <th class="px-3 py-2 text-right">견적금액</th>
+                                    <th class="px-3 py-2 text-left">수신일시</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s7_quoteList"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(6)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(8)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 견적 비교 분석 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 8: 견적 비교 분석 (Mock) ======================= -->
+            <div id="step8" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">📊 견적 비교 분석</h2>
+                        <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="mini-card">
+                            <p class="text-2xl font-bold text-blue-600" id="s8_total">0</p>
+                            <p class="text-xs text-gray-600">총 처리 건수</p>
+                        </div>
+                        <div class="mini-card">
+                            <p class="text-2xl font-bold text-green-600" id="s8_auto">0</p>
+                            <p class="text-xs text-gray-600">자동완료</p>
+                            <p class="text-xs text-green-500" id="s8_autoRate">0%</p>
+                        </div>
+                        <div class="mini-card">
+                            <p class="text-2xl font-bold text-orange-600" id="s8_hitl">0</p>
+                            <p class="text-xs text-gray-600">HITL</p>
+                            <p class="text-xs text-orange-500" id="s8_hitlRate">0%</p>
+                        </div>
+                        <div class="mini-card">
+                            <p class="text-2xl font-bold text-purple-600" id="s8_llmCalls">0</p>
+                            <p class="text-xs text-gray-600">LLM 호출</p>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div class="mb-4">
+                        <h3 class="font-medium mb-2">🏆 견적 비교 (최저가 선정)</h3>
+                        <div class="border rounded max-h-64 overflow-y-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">PR번호</th>
+                                        <th class="px-3 py-2 text-left">선정업체</th>
+                                        <th class="px-3 py-2 text-right">최저가</th>
+                                        <th class="px-3 py-2 text-right">예정가대비</th>
+                                        <th class="px-3 py-2 text-left">적정성</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="s8_comparisonList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Final Actions -->
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-green-800">🎉 처리 완료</h3>
+                                <p class="text-sm text-green-600 mt-1">처리시간: <span id="s8_time">0</span>초 | 토큰사용: <span id="s8_tokens">0</span></p>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button onclick="downloadExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                    📥 Excel 다운로드
+                                </button>
+                                <button onclick="batchSRMTransfer()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                                    🚀 SRM 일괄 전송
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(7)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(1)" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                        처음으로
+                    </button>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -622,9 +695,7 @@
             <div class="p-6 border-b">
                 <h3 class="text-lg font-bold">⚠️ 검토필요 <span id="modalPrId"></span></h3>
             </div>
-            <div class="p-6" id="modalContent">
-                <!-- Content will be dynamically populated -->
-            </div>
+            <div class="p-6" id="modalContent"></div>
             <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3">
                 <button onclick="closeHitlModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">취소</button>
                 <button onclick="submitHitlDecision()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">✅ 결정 완료</button>
@@ -632,19 +703,17 @@
         </div>
     </div>
 
-    <!-- Batch Email Confirmation Modal -->
+    <!-- Batch Email Modal -->
     <div id="batchEmailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div class="p-6 border-b">
                 <h3 class="text-lg font-bold">📧 이메일 발송 확인</h3>
             </div>
-            <div class="p-6" id="batchEmailContent">
-                <!-- Content will be dynamically populated -->
-            </div>
+            <div class="p-6" id="batchEmailContent"></div>
             <div class="p-6 border-t bg-gray-50 flex justify-end space-x-3">
                 <button onclick="closeBatchEmailModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">취소</button>
                 <button onclick="sendBatchEmails()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    <i class="fas fa-paper-plane mr-1"></i>📧 발송
+                    <i class="fas fa-paper-plane mr-1"></i>발송
                 </button>
             </div>
         </div>
@@ -659,47 +728,46 @@
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <div class="p-6" id="emailPreviewContent">
-                <!-- Content will be dynamically populated -->
-            </div>
+            <div class="p-6" id="emailPreviewContent"></div>
             <div class="p-6 border-t bg-gray-50 flex justify-end">
                 <button onclick="closeEmailPreviewModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">닫기</button>
             </div>
         </div>
     </div>
 
-    <!-- Email Sent Success Modal -->
-    <div id="emailSentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div class="p-8 text-center">
                 <div class="text-6xl mb-4">✅</div>
-                <h3 class="text-xl font-bold mb-2">이메일 발송 완료</h3>
-                <p class="text-gray-600 mb-6" id="emailSentMessage">0명에게 0건의 메일이 발송되었습니다.</p>
-                <button onclick="closeEmailSentModal()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">확인</button>
+                <h3 class="text-xl font-bold mb-2" id="successTitle">완료</h3>
+                <p class="text-gray-600 mb-6" id="successMessage">작업이 완료되었습니다.</p>
+                <button onclick="closeSuccessModal()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">확인</button>
             </div>
         </div>
     </div>
 
     <script>
-        // State
+        // ============================================
+        // STATE
+        // ============================================
         let currentStep = 1;
+        let maxReachedStep = 1;
         let uploadedFiles = [];
         let quotationData = [];
         let selectedPR = null;
         let processingResults = null;
         let allPRData = [];
+        let sentEmails = {};
+        let mockQuoteStatus = {}; // For step 7 mock
 
-        // DOM Elements
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const startProcessBtn = document.getElementById('startProcessBtn');
-
-        // Initialize
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             checkHealth();
             setupDropZone();
             setupFilters();
-            setupResultTabs();
         });
 
         async function checkHealth() {
@@ -718,7 +786,68 @@
             }
         }
 
+        // ============================================
+        // STEP NAVIGATION
+        // ============================================
+        function navigateToStep(step) {
+            if (step > maxReachedStep && step > 1) {
+                alert('AI 처리를 먼저 완료하세요.');
+                return;
+            }
+            goToStep(step);
+        }
+
+        function goToStep(step) {
+            currentStep = step;
+            
+            // Hide all step content
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step${step}`).classList.remove('hidden');
+
+            // Update step indicators
+            for (let i = 1; i <= 8; i++) {
+                const circle = document.getElementById(`step-circle-${i}`);
+                if (i < step) {
+                    circle.className = 'step-circle step-completed';
+                    circle.innerHTML = '<i class="fas fa-check text-xs"></i>';
+                } else if (i === step) {
+                    circle.className = 'step-circle step-active';
+                    circle.textContent = i;
+                } else {
+                    circle.className = 'step-circle step-pending';
+                    circle.textContent = i;
+                }
+            }
+
+            // Update step lines
+            document.querySelectorAll('.step-line').forEach((el) => {
+                const lineNum = parseInt(el.getAttribute('data-line'));
+                if (lineNum < step) {
+                    el.classList.remove('bg-gray-300');
+                    el.classList.add('bg-green-500');
+                } else {
+                    el.classList.remove('bg-green-500');
+                    el.classList.add('bg-gray-300');
+                }
+            });
+
+            // Load data for specific steps
+            if (step === 2) populateStep2();
+            if (step === 3) populateStep3();
+            if (step === 4) { renderPRList(); updateQuotationCounts(); }
+            if (step === 5) populateStep5();
+            if (step === 6) populateStep6();
+            if (step === 7) populateStep7();
+            if (step === 8) populateStep8();
+        }
+
+        // ============================================
+        // STEP 1: FILE UPLOAD
+        // ============================================
         function setupDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            
             dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -730,8 +859,7 @@
             dropZone.addEventListener('drop', async (e) => {
                 e.preventDefault();
                 dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-                const files = e.dataTransfer.files;
-                await handleFiles(files);
+                await handleFiles(e.dataTransfer.files);
             });
             fileInput.addEventListener('change', async (e) => {
                 await handleFiles(e.target.files);
@@ -740,22 +868,19 @@
 
         async function handleFiles(files) {
             if (files.length === 0) return;
-
             const formData = new FormData();
             for (const file of files) {
                 formData.append('files', file);
             }
-
             try {
                 const res = await axios.post('/api/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-
                 if (res.data.success) {
                     uploadedFiles = res.data.files;
                     displayUploadedFiles();
                     updateDataSummary();
-                    startProcessBtn.disabled = false;
+                    document.getElementById('startProcessBtn').disabled = false;
                 }
             } catch (e) {
                 alert('파일 업로드 실패: ' + (e.response?.data?.error || e.message));
@@ -766,13 +891,12 @@
             const container = document.getElementById('uploadedFiles');
             const list = document.getElementById('fileList');
             container.classList.remove('hidden');
-
             list.innerHTML = uploadedFiles.map(f => `
                 <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
                     <div class="flex items-center">
                         <i class="fas fa-file-excel text-green-600 mr-2"></i>
-                        <span class="text-sm">${f.filename}</span>
-                        <span class="text-xs text-gray-500 ml-2">(${f.rows.toLocaleString()}건)</span>
+                        <span class="text-xs">${f.filename}</span>
+                        <span class="text-xs text-gray-500 ml-1">(${f.rows.toLocaleString()}건)</span>
                     </div>
                     <span class="text-green-600"><i class="fas fa-check"></i></span>
                 </div>
@@ -782,7 +906,8 @@
         async function updateDataSummary() {
             try {
                 const res = await axios.get('/api/summary');
-                document.getElementById('dataSummary').classList.remove('hidden');
+                document.getElementById('dataSummary').classList.add('hidden');
+                document.getElementById('summaryLoaded').classList.remove('hidden');
                 document.getElementById('prCount').textContent = res.data.prTotal.toLocaleString();
                 document.getElementById('poCount').textContent = res.data.poHistoryTotal.toLocaleString();
                 document.getElementById('pzafCount').textContent = res.data.pzafCount.toLocaleString();
@@ -791,28 +916,23 @@
             }
         }
 
-        // Load Sample Data Button
+        // Load Sample Data
         document.getElementById('loadSampleBtn').addEventListener('click', loadSampleData);
 
         async function loadSampleData() {
             const btn = document.getElementById('loadSampleBtn');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>불러오는 중...';
-
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>불러오는 중...';
             try {
                 const res = await axios.post('/api/load-sample');
-                
                 if (res.data.success) {
                     uploadedFiles = res.data.files;
                     displayUploadedFiles();
                     await updateDataSummary();
-                    startProcessBtn.disabled = false;
-                    
-                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>불러오기 완료';
+                    document.getElementById('startProcessBtn').disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check mr-1"></i>불러오기 완료';
                     btn.classList.remove('bg-green-600', 'hover:bg-green-700');
                     btn.classList.add('bg-gray-400');
-                } else {
-                    throw new Error(res.data.error || '데이터 로드 실패');
                 }
             } catch (e) {
                 alert('데이터 로드 실패: ' + (e.response?.data?.error || e.message));
@@ -822,26 +942,15 @@
         }
 
         // Start Processing
-        startProcessBtn.addEventListener('click', startProcessing);
+        document.getElementById('startProcessBtn').addEventListener('click', startProcessing);
 
         async function startProcessing() {
-            goToStep(2);
-            
-            // Reset processing UI
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('progressPercent').textContent = '0%';
-            document.getElementById('logContainer').innerHTML = '';
-            
-            // Reset step icons
-            document.querySelectorAll('#processingSteps .step-row').forEach(row => {
-                row.querySelector('.step-icon').classList.remove('bg-green-500', 'bg-blue-500');
-                row.querySelector('.step-icon').classList.add('bg-gray-200');
-                row.querySelector('.step-result').textContent = '';
-            });
+            // Show processing dashboard
+            document.getElementById('processingDashboard').classList.remove('hidden');
+            document.getElementById('startProcessBtn').disabled = true;
+            document.getElementById('startProcessBtn').innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>처리중...';
 
             try {
-                addLogEntry('AI Agent 시작...', 'info');
-
                 const res = await axios.post('/api/process');
                 
                 if (res.data.success) {
@@ -849,117 +958,52 @@
                     quotationData = res.data.results.quotationData || [];
                     allPRData = res.data.results.allPRData || quotationData;
                     
-                    // Update progress to 100%
-                    document.getElementById('progressBar').style.width = '100%';
-                    document.getElementById('progressPercent').textContent = '100%';
-                    document.getElementById('currentStep').textContent = '처리 완료!';
-
-                    // Mark all steps as complete
-                    document.querySelectorAll('#processingSteps .step-row').forEach(row => {
-                        row.querySelector('.step-icon').classList.remove('bg-gray-200');
-                        row.querySelector('.step-icon').classList.add('bg-green-500');
-                        row.querySelector('.step-icon').innerHTML = '<i class="fas fa-check text-white"></i>';
-                    });
-
-                    // Show completion logs
-                    if (res.data.results.summary) {
-                        displaySummaryLogs(res.data.results.summary);
-                    }
-
-                    // Transition to Step 2-1 (Results) after 2 seconds
+                    // Update dashboard with final stats
+                    const summary = processingResults.summary;
+                    document.getElementById('dashTotal').textContent = summary.total;
+                    document.getElementById('dashAuto').textContent = summary.autoComplete;
+                    document.getElementById('dashHITL').textContent = summary.needReview;
+                    document.getElementById('dashLLM').textContent = summary.llmCalls;
+                    document.getElementById('dashProgress').style.width = '100%';
+                    document.getElementById('dashboardStatus').textContent = '처리 완료!';
+                    document.getElementById('dashboardStep').textContent = `${summary.total}건 처리 완료`;
+                    
+                    maxReachedStep = 8; // All steps accessible
+                    
+                    // Show validation results in Step 1
+                    showValidationResults();
+                    
+                    // Hide dashboard after delay
                     setTimeout(() => {
-                        showResultsStep();
-                    }, 2000);
+                        document.getElementById('processingDashboard').classList.add('hidden');
+                    }, 3000);
                 }
             } catch (e) {
-                addLogEntry('오류 발생: ' + (e.response?.data?.error || e.message), 'error');
+                alert('처리 실패: ' + (e.response?.data?.error || e.message));
+            } finally {
+                document.getElementById('startProcessBtn').innerHTML = '🚀 AI 처리 시작';
             }
         }
 
-        function displaySummaryLogs(summary) {
-            addLogEntry(`✅ 총 처리 건수: ${summary.total}건`, 'success');
-            addLogEntry(`🔴 긴급: ${summary.urgent}건, 🟡 일반: ${summary.normal}건, 🟢 여유: ${summary.flexible}건`, 'info');
-            addLogEntry(`자동완료: ${summary.autoComplete}건, 검토필요: ${summary.needReview}건`, 'info');
-            addLogEntry(`LLM 호출: ${summary.llmCalls}회`, 'info');
-            addLogEntry(`처리 시간: ${summary.processingTime}초`, 'success');
-        }
-
-        function addLogEntry(message, type = 'info') {
-            const container = document.getElementById('logContainer');
-            const colors = {
-                info: 'text-gray-300',
-                success: 'text-green-400',
-                warning: 'text-yellow-400',
-                error: 'text-red-400'
-            };
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${colors[type] || colors.info}`;
-            entry.innerHTML = `<span class="text-gray-500">${time}</span> ${message}`;
-            container.appendChild(entry);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Show Step 2-1 Results
-        function showResultsStep() {
-            // Hide step2 and show step2-1
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('step2-1').classList.remove('hidden');
+        function showValidationResults() {
+            const results = document.getElementById('validationResults');
+            results.classList.remove('hidden');
             
-            // AI 처리 완료 - 최대 도달 단계를 4로 설정 (모든 단계 이동 가능)
-            maxReachedStep = 4;
-            
-            // Populate results
-            populateResultsTabs();
-        }
-
-        // Result Tabs
-        function setupResultTabs() {
-            document.querySelectorAll('.result-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.dataset.tab;
-                    
-                    // Update tab styles
-                    document.querySelectorAll('.result-tab').forEach(t => {
-                        t.classList.remove('tab-active');
-                        t.classList.add('tab-inactive');
-                    });
-                    tab.classList.remove('tab-inactive');
-                    tab.classList.add('tab-active');
-                    
-                    // Show corresponding content
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-                    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-                });
-            });
-        }
-
-        function populateResultsTabs() {
-            if (!processingResults) return;
-            
-            const summary = processingResults.summary;
             const invalidPR = processingResults.invalidPR || [];
+            const validCount = processingResults.summary.total;
             
-            // Header totals
-            document.getElementById('resultTotalPR').textContent = (summary.total + invalidPR.length).toLocaleString();
-            document.getElementById('resultProcessedPR').textContent = summary.total.toLocaleString();
+            document.getElementById('validCount2').textContent = validCount.toLocaleString();
+            document.getElementById('invalidCount2').textContent = invalidPR.length.toLocaleString();
             
-            // Tab 1: Validation
-            const validCount = summary.total;
-            const invalidCount = invalidPR.length;
-            document.getElementById('validCount').textContent = validCount.toLocaleString();
-            document.getElementById('invalidCount').textContent = invalidCount.toLocaleString();
-            
-            if (invalidCount > 0) {
-                document.querySelector('.validation-warning').classList.remove('hidden');
-                document.getElementById('invalidPRSection').classList.remove('hidden');
-                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 50).map((pr, idx) => `
+            if (invalidPR.length > 0) {
+                document.getElementById('invalidSection').classList.remove('hidden');
+                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 30).map((pr, idx) => `
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">⚠️ ${pr['구매요청'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
-                        <td class="px-4 py-3 text-red-600">${pr['누락항목'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
-                        <td class="px-4 py-3">
+                        <td class="px-3 py-2">⚠️ ${pr['구매요청'] || '-'}</td>
+                        <td class="px-3 py-2">${pr['자재번호'] || '-'}</td>
+                        <td class="px-3 py-2 text-red-600">${pr['누락항목'] || '-'}</td>
+                        <td class="px-3 py-2">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
+                        <td class="px-3 py-2">
                             <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
                                 📧 미리보기
                             </button>
@@ -967,209 +1011,94 @@
                     </tr>
                 `).join('');
             }
-            
-            // Tab 2: Contract Classification
+        }
+
+        // ============================================
+        // STEP 2: 계약/긴급도 확인
+        // ============================================
+        function populateStep2() {
+            if (!processingResults) return;
+            const summary = processingResults.summary;
             const cs = summary.contractSummary || {};
-            const total = (cs.standard || 0) + (cs.nonStandard || 0) + (cs.na || 0);
-            document.getElementById('standardCount').textContent = (cs.standard || 0).toLocaleString();
-            document.getElementById('nonStandardCount').textContent = (cs.nonStandard || 0).toLocaleString();
-            document.getElementById('naCount').textContent = (cs.na || 0).toLocaleString();
-            document.getElementById('standardPercent').textContent = total > 0 ? `${((cs.standard || 0) / total * 100).toFixed(1)}%` : '0%';
-            document.getElementById('nonStandardPercent').textContent = total > 0 ? `${((cs.nonStandard || 0) / total * 100).toFixed(1)}%` : '0%';
-            document.getElementById('naPercent').textContent = total > 0 ? `${((cs.na || 0) / total * 100).toFixed(1)}%` : '0%';
             
-            document.getElementById('contractList').innerHTML = quotationData.slice(0, 20).map(pr => `
+            document.getElementById('s2_standard').textContent = (cs.standard || 0).toLocaleString();
+            document.getElementById('s2_nonStandard').textContent = (cs.nonStandard || 0).toLocaleString();
+            document.getElementById('s2_na').textContent = (cs.na || 0).toLocaleString();
+            document.getElementById('s2_urgent').textContent = (summary.urgent || 0).toLocaleString();
+            document.getElementById('s2_normal').textContent = (summary.normal || 0).toLocaleString();
+            document.getElementById('s2_flexible').textContent = (summary.flexible || 0).toLocaleString();
+            
+            // Contract list
+            document.getElementById('s2_contractList').innerHTML = quotationData.slice(0, 30).map(pr => `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="px-4 py-3">${pr['구매요청'] || '-'}</td>
-                    <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
-                    <td class="px-4 py-3">
-                        <span class="px-2 py-1 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100'}">
+                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                    <td class="px-3 py-2">
+                        <span class="px-2 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100'}">
                             ${pr['계약분류'] || '-'}
                         </span>
                     </td>
-                    <td class="px-4 py-3">${pr['단가계약번호'] || '-'}</td>
+                    <td class="px-3 py-2">${pr['단가계약번호'] || '-'}</td>
                 </tr>
             `).join('');
             
-            // Tab 3: Urgency
-            document.getElementById('urgentCount').textContent = (summary.urgent || 0).toLocaleString();
-            document.getElementById('normalCount').textContent = (summary.normal || 0).toLocaleString();
-            document.getElementById('flexibleCount').textContent = (summary.flexible || 0).toLocaleString();
-            document.getElementById('urgentPercent').textContent = summary.total > 0 ? `${((summary.urgent || 0) / summary.total * 100).toFixed(1)}%` : '0%';
-            document.getElementById('normalPercent').textContent = summary.total > 0 ? `${((summary.normal || 0) / summary.total * 100).toFixed(1)}%` : '0%';
-            document.getElementById('flexiblePercent').textContent = summary.total > 0 ? `${((summary.flexible || 0) / summary.total * 100).toFixed(1)}%` : '0%';
-            
-            const urgentPRs = quotationData.filter(pr => pr['긴급도'] === '긴급').slice(0, 20);
-            document.getElementById('urgentList').innerHTML = urgentPRs.map(pr => `
-                <tr class="border-b hover:bg-gray-50 bg-red-50">
-                    <td class="px-4 py-3">🔴 ${pr['구매요청'] || '-'}</td>
-                    <td class="px-4 py-3">${pr['PR납기일'] || '-'}</td>
-                    <td class="px-4 py-3">${pr['LEAD_TIME'] || '-'}일</td>
-                    <td class="px-4 py-3">${pr['실제잔여일수'] || '-'}일</td>
-                    <td class="px-4 py-3"><span class="text-red-600 font-medium">긴급</span></td>
-                    <td class="px-4 py-3 truncate max-w-xs">${(pr['내역'] || '').substring(0, 30)}...</td>
+            // Urgency list
+            document.getElementById('s2_urgencyList').innerHTML = quotationData.slice(0, 30).map(pr => `
+                <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
+                    <td class="px-3 py-2">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
+                    <td class="px-3 py-2">${pr['PR납기일'] || '-'}</td>
+                    <td class="px-3 py-2">${pr['실제잔여일수'] || '-'}일</td>
+                    <td class="px-3 py-2">
+                        <span class="${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        // ============================================
+        // STEP 3: 업체/발주방식 판단
+        // ============================================
+        function populateStep3() {
+            if (!processingResults) return;
             
-            const criticalPRs = quotationData.filter(pr => (pr['실제잔여일수'] || 999) <= 0);
-            if (criticalPRs.length > 0) {
-                document.getElementById('criticalAlert').classList.remove('hidden');
-                document.getElementById('criticalCount').textContent = criticalPRs.length;
-            }
-            
-            // Tab 4: Supplier Matching
             const matched = quotationData.filter(pr => pr['업체매칭여부']).length;
-            const unmatched = quotationData.filter(pr => !pr['업체매칭여부']).length;
-            document.getElementById('matchedCount').textContent = matched.toLocaleString();
-            document.getElementById('unmatchedCount').textContent = unmatched.toLocaleString();
-            document.getElementById('matchedPercent').textContent = summary.total > 0 ? `${(matched / summary.total * 100).toFixed(1)}%` : '0%';
-            document.getElementById('unmatchedPercent').textContent = summary.total > 0 ? `${(unmatched / summary.total * 100).toFixed(1)}%` : '0%';
+            const unmatched = quotationData.length - matched;
+            const direct = quotationData.filter(pr => pr['계약방식'] === '수의계약').length;
+            const bidding = quotationData.filter(pr => pr['계약방식'] === '지명경쟁').length;
             
-            if (unmatched > 0) {
-                document.querySelector('.supplier-warning').classList.remove('hidden');
-                document.getElementById('unmatchedSection').classList.remove('hidden');
-                document.getElementById('unmatchedList').innerHTML = quotationData.filter(pr => !pr['업체매칭여부']).slice(0, 10).map(pr => `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">⚠️ ${pr['구매요청'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
-                        <td class="px-4 py-3 truncate max-w-xs">${(pr['내역'] || '').substring(0, 30)}...</td>
-                        <td class="px-4 py-3 text-red-600">과거실적없음</td>
-                    </tr>
-                `).join('');
-            }
+            document.getElementById('s3_matched').textContent = matched.toLocaleString();
+            document.getElementById('s3_unmatched').textContent = unmatched.toLocaleString();
+            document.getElementById('s3_direct').textContent = direct.toLocaleString();
+            document.getElementById('s3_bidding').textContent = bidding.toLocaleString();
             
-            document.getElementById('matchedList').innerHTML = quotationData.filter(pr => pr['업체매칭여부']).slice(0, 20).map(pr => `
+            // Supplier list
+            document.getElementById('s3_supplierList').innerHTML = quotationData.slice(0, 30).map(pr => `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="px-4 py-3">${pr['구매요청'] || '-'}</td>
-                    <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
-                    <td class="px-4 py-3">${pr['매칭업체명'] || '-'}</td>
-                    <td class="px-4 py-3">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
+                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                    <td class="px-3 py-2">${pr['매칭업체명'] || '<span class="text-red-500">신규필요</span>'}</td>
+                    <td class="px-3 py-2">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
                 </tr>
             `).join('');
             
-            // Tab 5: Price Estimation
-            const priceMethods = summary.priceMethodSummary || {};
-            const price1 = priceMethods['자재+내역 일치'] || 0;
-            const price2 = priceMethods['그룹 평균'] || 0;
-            const price3 = priceMethods['LLM 산정'] || 0;
-            const price4 = priceMethods['기본값'] || 0;
-            const priceTotal = price1 + price2 + price3 + price4;
-            
-            document.getElementById('price1Count').textContent = price1.toLocaleString();
-            document.getElementById('price2Count').textContent = price2.toLocaleString();
-            document.getElementById('price3Count').textContent = price3.toLocaleString();
-            document.getElementById('price4Count').textContent = price4.toLocaleString();
-            document.getElementById('price1Percent').textContent = priceTotal > 0 ? `${(price1 / priceTotal * 100).toFixed(1)}%` : '0%';
-            document.getElementById('price2Percent').textContent = priceTotal > 0 ? `${(price2 / priceTotal * 100).toFixed(1)}%` : '0%';
-            document.getElementById('price3Percent').textContent = priceTotal > 0 ? `${(price3 / priceTotal * 100).toFixed(1)}%` : '0%';
-            document.getElementById('price4Percent').textContent = priceTotal > 0 ? `${(price4 / priceTotal * 100).toFixed(1)}%` : '0%';
-            
-            const specialPRs = quotationData.filter(pr => pr['예정가_산정방법'] === 'LLM 산정' || pr['예정가_산정방법'] === '기본값');
-            if (specialPRs.length > 0) {
-                document.querySelector('.price-warning').classList.remove('hidden');
-                document.getElementById('priceSpecialSection').classList.remove('hidden');
-                document.getElementById('priceSpecialList').innerHTML = specialPRs.slice(0, 10).map(pr => `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">${pr['예정가_산정방법'] === 'LLM 산정' ? '🧠' : '⚠️'} ${pr['구매요청'] || '-'}</td>
-                        <td class="px-4 py-3 truncate max-w-xs">${(pr['내역'] || '').substring(0, 30)}...</td>
-                        <td class="px-4 py-3">${pr['예정가_산정방법'] || '-'}</td>
-                        <td class="px-4 py-3">₩${(pr['입찰예정가'] || 0).toLocaleString()}</td>
-                        <td class="px-4 py-3">${pr['LLM응답']?.['신뢰도'] || '-'}</td>
-                    </tr>
-                `).join('');
-            }
-            
-            if (price4 > 0) {
-                document.getElementById('priceDefaultAlert').classList.remove('hidden');
-                document.getElementById('defaultPriceCount').textContent = price4;
-            }
+            // Method list
+            document.getElementById('s3_methodList').innerHTML = quotationData.slice(0, 30).map(pr => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                    <td class="px-3 py-2">
+                        <span class="${pr['계약방식'] === '수의계약' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약방식'] || '-'}</span>
+                    </td>
+                    <td class="px-3 py-2 text-xs truncate max-w-xs">${(pr['계약방식_선정사유'] || '').substring(0, 30)}...</td>
+                </tr>
+            `).join('');
         }
 
-        // Step Navigation - Click on header steps
-        let maxReachedStep = 1; // 도달한 최대 단계 추적
-        
-        function navigateToStep(step) {
-            // 아직 처리가 안된 단계로는 이동 불가
-            if (step > maxReachedStep) {
-                if (step === 2 && !processingResults) {
-                    alert('먼저 PR 데이터를 업로드하고 AI 처리를 시작하세요.');
-                    return;
-                }
-                if (step === 3 && !processingResults) {
-                    alert('먼저 AI 처리를 완료하세요.');
-                    return;
-                }
-                if (step === 4 && !processingResults) {
-                    alert('먼저 AI 처리를 완료하세요.');
-                    return;
-                }
-            }
-            
-            // AI 처리 단계(2)를 클릭하면 결과 화면(2-1)으로 이동
-            if (step === 2 && processingResults) {
-                goToStep('2-1');
-            } else {
-                goToStep(step);
-            }
-        }
-        
-        function goToStep(step) {
-            currentStep = step;
-            
-            // Hide all step content
-            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-            
-            // Handle special case for step 2-1
-            if (step === '2-1') {
-                document.getElementById('step2-1').classList.remove('hidden');
-                step = 2;
-            } else {
-                document.getElementById(`step${step}`).classList.remove('hidden');
-            }
-
-            // Update step indicators
-            document.querySelectorAll('.step-item[data-step]').forEach((el) => {
-                const stepNum = parseInt(el.getAttribute('data-step'));
-                const circle = el.querySelector('.step-circle');
-                if (circle) {
-                    if (stepNum < step) {
-                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-completed';
-                    } else if (stepNum === step) {
-                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-active';
-                    } else {
-                        circle.className = 'step-circle w-10 h-10 rounded-full flex items-center justify-center step-pending';
-                    }
-                }
-            });
-
-            // Update step lines
-            document.querySelectorAll('.step-line').forEach((el) => {
-                const lineNum = parseInt(el.getAttribute('data-line'));
-                if (lineNum < step) {
-                    el.classList.remove('bg-gray-300');
-                    el.classList.add('bg-green-600');
-                } else {
-                    el.classList.remove('bg-green-600');
-                    el.classList.add('bg-gray-300');
-                }
-            });
-
-            // Load data for specific steps
-            if (step === 3) {
-                renderPRList();
-                updateQuotationCounts();
-            }
-            if (step === 4) {
-                updateFinalReport();
-            }
-        }
-
-        // PR List & Detail (Step 3)
+        // ============================================
+        // STEP 4: 견적의뢰 관리
+        // ============================================
         function setupFilters() {
             document.getElementById('urgencyFilter').addEventListener('change', renderPRList);
-            document.getElementById('contractFilter')?.addEventListener('change', renderPRList);
+            document.getElementById('contractFilter').addEventListener('change', renderPRList);
             document.getElementById('statusFilter').addEventListener('change', renderPRList);
-            document.getElementById('searchInput')?.addEventListener('input', renderPRList);
+            document.getElementById('searchInput').addEventListener('input', renderPRList);
         }
 
         function updateQuotationCounts() {
@@ -1179,21 +1108,14 @@
 
         function renderPRList() {
             const urgencyFilter = document.getElementById('urgencyFilter').value;
-            const contractFilter = document.getElementById('contractFilter')?.value || 'all';
+            const contractFilter = document.getElementById('contractFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
-            const searchText = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
 
             let filtered = [...quotationData];
-
-            if (urgencyFilter !== 'all') {
-                filtered = filtered.filter(pr => pr['긴급도'] === urgencyFilter);
-            }
-            if (contractFilter !== 'all') {
-                filtered = filtered.filter(pr => pr['계약방식'] === contractFilter);
-            }
-            if (statusFilter !== 'all') {
-                filtered = filtered.filter(pr => pr['처리상태'] === statusFilter);
-            }
+            if (urgencyFilter !== 'all') filtered = filtered.filter(pr => pr['긴급도'] === urgencyFilter);
+            if (contractFilter !== 'all') filtered = filtered.filter(pr => pr['계약방식'] === contractFilter);
+            if (statusFilter !== 'all') filtered = filtered.filter(pr => pr['처리상태'] === statusFilter);
             if (searchText) {
                 filtered = filtered.filter(pr => 
                     (pr['구매요청'] || '').toLowerCase().includes(searchText) ||
@@ -1213,8 +1135,8 @@
                          onclick="selectPR('${pr['구매요청']}')">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="font-medium">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청']}</p>
-                                <p class="text-xs text-gray-600 truncate" style="max-width: 200px;">${pr['내역'] || ''}</p>
+                                <p class="font-medium text-sm">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청']}</p>
+                                <p class="text-xs text-gray-600 truncate" style="max-width: 180px;">${pr['내역'] || ''}</p>
                             </div>
                             <span class="text-sm">${statusIcon}</span>
                         </div>
@@ -1225,7 +1147,6 @@
                 `;
             }).join('');
 
-            // Update counts
             const autoComplete = quotationData.filter(p => p['처리상태'] === '자동완료').length;
             const needReview = quotationData.filter(p => p['처리상태'] === '검토필요').length;
             document.getElementById('autoCompleteCount').textContent = autoComplete;
@@ -1244,25 +1165,22 @@
 
             const container = document.getElementById('detailView');
             const estimatedPrice = pr['입찰예정가'] || 0;
-            const quotedPrice = pr['Mock_견적금액'] || 0;
             const exchangeRate = 1453;
             const estimatedPriceUSD = Math.round(estimatedPrice / exchangeRate);
-            
-            // 초청협력회사 2~3개 랜덤 생성 (매칭업체 포함)
             const randomVendors = pr['초청협력회사'] || generateRandomVendors(pr);
 
             container.innerHTML = `
                 <div class="space-y-4">
                     <!-- Header -->
-                    <div class="flex justify-between items-start pb-4 border-b">
+                    <div class="flex justify-between items-start pb-3 border-b">
                         <div>
                             <div class="flex items-center space-x-2 mb-1">
-                                <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">견적의뢰번호</span>
+                                <span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs">견적의뢰번호</span>
                                 <span class="font-bold">RFQ-${pr['구매요청']}</span>
                             </div>
-                            <p class="text-gray-600 text-sm">차수: 1</p>
+                            <p class="text-gray-600 text-xs">차수: 1</p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${
                             pr['처리상태'] === '자동완료' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
                         }">
                             ${pr['처리상태'] === '자동완료' ? '✅ 자동완료' : '⚠️ 검토필요'}
@@ -1270,10 +1188,10 @@
                     </div>
 
                     <!-- 기본정보 -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">기본정보</h4>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="text-gray-500">입찰목적물</span><p class="font-medium">${pr['내역'] || '-'}</p></div>
+                    <div class="bg-gray-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">기본정보</h4>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div><span class="text-gray-500">입찰목적물</span><p class="font-medium truncate">${pr['내역'] || '-'}</p></div>
                             <div><span class="text-gray-500">소싱그룹</span><p class="font-medium">${pr['소싱그룹'] || '-'}</p></div>
                             <div><span class="text-gray-500">구매담당</span><p class="font-medium">${pr['구매원'] || '-'}</p></div>
                             <div><span class="text-gray-500">시리즈호선</span><p class="font-medium">${(pr['자재번호'] || '').substring(0, 4) || '-'}</p></div>
@@ -1282,9 +1200,9 @@
                     </div>
 
                     <!-- 계약정보 -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">계약정보</h4>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="bg-gray-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">계약정보</h4>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
                             <div><span class="text-gray-500">계약방식</span><p class="font-medium">${pr['계약방식'] || '-'}</p></div>
                             <div><span class="text-gray-500">계약대상자선정방식</span><p class="font-medium">최저가</p></div>
                             <div><span class="text-gray-500">단가계약여부</span><p class="font-medium">${pr['계약분류'] || '-'}</p></div>
@@ -1292,255 +1210,325 @@
                         </div>
                     </div>
 
-                    <!-- 입찰조건 (신규) -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">입찰조건</h4>
-                        <div class="grid grid-cols-3 gap-3 text-sm">
+                    <!-- 입찰조건 -->
+                    <div class="bg-gray-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">입찰조건</h4>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-500">조건 변경 가능</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
+                                <span class="text-gray-500">조건변경</span>
+                                <select class="text-xs border rounded px-1 py-0.5 bg-white"><option value="Y" selected>Y</option><option value="N">N</option></select>
+                            </div>
+                            <div><span class="text-gray-500">업체선정</span><p class="font-medium">문서별</p></div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500">부분입찰</span>
+                                <select class="text-xs border rounded px-1 py-0.5 bg-white"><option value="Y" selected>Y</option><option value="N">N</option></select>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-500">업체 선정 방식</span>
-                                <span class="font-medium">문서별</span>
+                                <span class="text-gray-500">전자계약</span>
+                                <select class="text-xs border rounded px-1 py-0.5 bg-white"><option value="Y" selected>Y</option><option value="N">N</option></select>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-500">부분 입찰 가능</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">전자계약 여부</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">AVL 품목 여부</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 접수/평가 -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">접수/평가</h4>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="text-gray-500">접수기간</span><p class="font-medium">${pr['접수기간_일'] || 3}일 ${pr['긴급도'] === '긴급' ? '(긴급)' : ''}</p></div>
-                            <div><span class="text-gray-500">기술평가대상</span><p class="font-medium">${pr['기술평가대상'] || 'N'}</p></div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">기술자료요구서</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">비밀유지서약 여부</span>
-                                <select class="text-xs border rounded px-2 py-1 bg-white">
-                                    <option value="Y" selected>Y</option>
-                                    <option value="N">N</option>
-                                </select>
+                                <span class="text-gray-500">AVL품목</span>
+                                <select class="text-xs border rounded px-1 py-0.5 bg-white"><option value="Y" selected>Y</option><option value="N">N</option></select>
                             </div>
                         </div>
                     </div>
 
                     <!-- 금액정보 -->
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">금액정보</h4>
-                        <div class="grid grid-cols-3 gap-4 text-center mb-4">
+                    <div class="bg-blue-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">금액정보</h4>
+                        <div class="grid grid-cols-3 gap-3 text-center mb-2">
                             <div>
                                 <p class="text-xs text-gray-500">입찰예정가(KRW)</p>
-                                <p class="text-lg font-bold text-blue-600">₩${estimatedPrice.toLocaleString()}</p>
-                                <p class="text-xs text-gray-500">${pr['예정가_산정방법'] || ''}</p>
+                                <p class="text-sm font-bold text-blue-600">₩${estimatedPrice.toLocaleString()}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">예산금액(KRW)</p>
-                                <p class="text-lg font-bold">₩${estimatedPrice.toLocaleString()}</p>
+                                <p class="text-sm font-bold">₩${estimatedPrice.toLocaleString()}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">예산금액(USD)</p>
-                                <p class="text-lg font-bold text-green-600">$${estimatedPriceUSD.toLocaleString()}</p>
+                                <p class="text-sm font-bold text-green-600">$${estimatedPriceUSD.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 text-center border-t pt-3">
-                            <div>
-                                <p class="text-xs text-gray-500">예산금액환율</p>
-                                <p class="font-medium">${exchangeRate.toLocaleString()}원</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">요청수량</p>
-                                <p class="font-medium">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">총중량(KG)</p>
-                                <p class="font-medium">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p>
-                            </div>
+                        <div class="grid grid-cols-3 gap-3 text-center border-t pt-2">
+                            <div><p class="text-xs text-gray-500">환율</p><p class="text-xs font-medium">${exchangeRate.toLocaleString()}원</p></div>
+                            <div><p class="text-xs text-gray-500">요청수량</p><p class="text-xs font-medium">${pr['요청수량'] || '-'} ${pr['UOM'] || 'EA'}</p></div>
+                            <div><p class="text-xs text-gray-500">총중량(KG)</p><p class="text-xs font-medium">${pr['매칭_발주중량'] || pr['총중량'] || '-'}</p></div>
                         </div>
                     </div>
 
                     <!-- 협력회사 -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">초청협력회사 <span class="text-xs text-gray-400">(2~3개 랜덤 선정)</span></h4>
-                        <div class="space-y-2">
-                            ${randomVendors.map((vendor, idx) => `
-                                <label class="flex items-center">
+                    <div class="bg-gray-50 rounded p-3">
+                        <h4 class="font-medium text-xs text-gray-700 mb-2">초청협력회사 <span class="text-gray-400">(2~3개 랜덤)</span></h4>
+                        <div class="space-y-1">
+                            ${randomVendors.map(vendor => `
+                                <label class="flex items-center text-xs">
                                     <input type="checkbox" checked class="mr-2">
-                                    <span>${vendor.name} ${vendor.isMatched ? '<span class="text-xs text-blue-600">(매칭업체)</span>' : ''}</span>
+                                    <span>${vendor.name} ${vendor.isMatched ? '<span class="text-blue-600">(매칭)</span>' : ''}</span>
                                 </label>
                             `).join('')}
-                            ${pr['계약방식'] === '지명경쟁' ? `
-                                <button class="text-sm text-blue-600 hover:underline mt-2">+ 업체 추가</button>
-                            ` : ''}
                         </div>
-                        <div class="mt-3 p-2 bg-gray-200 rounded text-xs text-gray-500">
+                        <div class="mt-2 p-2 bg-gray-200 rounded text-xs text-gray-500">
                             <i class="fas fa-info-circle mr-1"></i>이전견적의뢰 최고평가협력사 누락 여부
                         </div>
                     </div>
 
-                    <!-- 선정사유 -->
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <h4 class="font-medium text-sm text-gray-700 mb-3">선정사유</h4>
-                        <div class="space-y-3 text-sm">
-                            <div>
-                                <p class="text-gray-500">계약방식 선정사유</p>
-                                <p class="text-xs bg-white p-2 rounded border">${pr['계약방식_선정사유'] || '-'}</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">입찰계획서 미승인 (${pr['미승인사유코드'] || '002_2'})</p>
-                                <p class="text-xs bg-white p-2 rounded border">${pr['미승인사유'] || '-'}</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- AI 판단 -->
-                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <h4 class="font-medium text-purple-800 mb-3">🧠 AI 판단</h4>
-                        <div class="space-y-2 text-sm">
+                    <div class="bg-purple-50 border border-purple-200 rounded p-3">
+                        <h4 class="font-medium text-purple-800 text-xs mb-2">🧠 AI 판단</h4>
+                        <div class="space-y-1 text-xs">
                             <p><strong>예정가 산정:</strong> ${pr['예정가_산정방법'] || '-'}</p>
-                            ${pr['계약방식'] === '수의계약' ? `
-                                <p><strong>수의계약 적정성:</strong> ${pr['수의계약_적정성'] || '-'}</p>
-                                <p><strong>단가변동률:</strong> ${(pr['단가변동률'] || 0).toFixed(1)}%</p>
-                            ` : `
-                                <p><strong>최저가 적정성:</strong> ${pr['최저가_적정성'] || '-'}</p>
-                                <p><strong>견적경쟁력:</strong> ${pr['견적경쟁력_신호'] || ''} ${pr['견적경쟁력'] || '-'}</p>
-                            `}
                             ${pr['HITL필요'] ? '<p class="text-orange-600"><i class="fas fa-exclamation-triangle mr-1"></i>담당자 검토 필요</p>' : ''}
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <!-- Actions -->
+                    <div class="flex justify-end space-x-2 pt-3 border-t">
                         ${pr['HITL필요'] ? `
-                            <button onclick="openHitlModal('${pr['구매요청']}')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-                                ⚠️ 검토하기
+                            <button onclick="openHitlModal('${pr['구매요청']}')" class="px-3 py-1.5 bg-orange-600 text-white rounded text-sm hover:bg-orange-700">
+                                ⚠️ 검토
                             </button>
                         ` : ''}
-                        <button onclick="approvePR('${pr['구매요청']}')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <button onclick="approvePR('${pr['구매요청']}')" class="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700">
                             ✅ 승인
                         </button>
-                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <button class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
                             SRM 전송
                         </button>
                     </div>
                 </div>
             `;
         }
-        
-        // 초청협력회사 2~3개 랜덤 생성
+
         function generateRandomVendors(pr) {
-            const sampleVendors = [
-                '(주)대한배관', '삼성중공업', '현대스틸', '포스코건설',
-                '한화에어로스페이스', 'STX중공업', '대우조선해양', 'SK에코플랜트',
-                '두산중공업', 'GS건설', '한진중공업', '삼호중공업'
-            ];
-            
+            const sampleVendors = ['(주)대한배관', '삼성중공업', '현대스틸', '포스코건설', '한화에어로스페이스', 'STX중공업', '대우조선해양', 'SK에코플랜트', '두산중공업', 'GS건설'];
             const vendors = [];
-            
-            // 매칭업체가 있으면 먼저 추가
-            if (pr['매칭업체명']) {
-                vendors.push({ name: pr['매칭업체명'], isMatched: true });
-            }
-            
-            // 랜덤으로 1~2개 추가 (총 2~3개가 되도록)
+            if (pr['매칭업체명']) vendors.push({ name: pr['매칭업체명'], isMatched: true });
             const count = pr['매칭업체명'] ? Math.floor(Math.random() * 2) + 1 : Math.floor(Math.random() * 2) + 2;
             const shuffled = sampleVendors.filter(v => v !== pr['매칭업체명']).sort(() => 0.5 - Math.random());
-            
             for (let i = 0; i < count && i < shuffled.length; i++) {
                 vendors.push({ name: shuffled[i], isMatched: false });
             }
-            
             return vendors;
         }
 
-        // HITL Modal
+        // ============================================
+        // STEP 5: HITL 검토
+        // ============================================
+        function populateStep5() {
+            if (!processingResults) return;
+            
+            const hitlItems = quotationData.filter(pr => pr['HITL필요']);
+            document.getElementById('hitlTotalCount').textContent = hitlItems.length;
+            
+            if (hitlItems.length === 0) {
+                document.getElementById('noHitlMessage').classList.remove('hidden');
+                document.getElementById('hitlList').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('noHitlMessage').classList.add('hidden');
+            document.getElementById('hitlList').classList.remove('hidden');
+            
+            document.getElementById('hitlList').innerHTML = hitlItems.map(pr => `
+                <div class="border rounded-lg p-4 hover:shadow transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="font-bold">${pr['구매요청']}</span>
+                            <span class="text-sm text-gray-500 ml-2">${pr['계약방식'] || '-'}</span>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs ${pr['긴급도'] === '긴급' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${pr['긴급도_신호']} ${pr['긴급도']}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2 truncate">${pr['내역'] || '-'}</p>
+                    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div><span class="text-gray-500">입찰예정가</span><p class="font-medium">₩${(pr['입찰예정가'] || 0).toLocaleString()}</p></div>
+                        <div><span class="text-gray-500">최근발주단가</span><p class="font-medium">₩${(pr['최근발주단가'] || 0).toLocaleString()}</p></div>
+                        <div><span class="text-gray-500">단가변동률</span><p class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}%</p></div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button onclick="openHitlModal('${pr['구매요청']}')" class="px-4 py-2 bg-orange-600 text-white rounded text-sm hover:bg-orange-700">
+                            검토하기 →
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // STEP 6: 입찰예정가 산정
+        // ============================================
+        function populateStep6() {
+            if (!processingResults) return;
+            const priceMethods = processingResults.summary.priceMethodSummary || {};
+            
+            const exact = priceMethods['자재+내역 일치'] || 0;
+            const group = priceMethods['그룹 평균'] || 0;
+            const llm = priceMethods['LLM 산정'] || 0;
+            const def = priceMethods['기본값'] || 0;
+            
+            document.getElementById('s6_exact').textContent = exact.toLocaleString();
+            document.getElementById('s6_group').textContent = group.toLocaleString();
+            document.getElementById('s6_llm').textContent = llm.toLocaleString();
+            document.getElementById('s6_default').textContent = def.toLocaleString();
+            
+            if (def > 0) {
+                document.getElementById('priceAlert').classList.remove('hidden');
+                document.getElementById('defaultCount').textContent = def;
+            }
+            
+            document.getElementById('s6_priceList').innerHTML = quotationData.slice(0, 50).map(pr => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-3 py-2">${pr['예정가_산정방법'] === 'LLM 산정' ? '🧠' : pr['예정가_산정방법'] === '기본값' ? '⚠️' : '✅'} ${pr['구매요청'] || '-'}</td>
+                    <td class="px-3 py-2 truncate max-w-xs">${(pr['내역'] || '').substring(0, 25)}...</td>
+                    <td class="px-3 py-2">
+                        <span class="px-1 py-0.5 rounded text-xs ${
+                            pr['예정가_산정방법'] === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
+                            pr['예정가_산정방법'] === '그룹 평균' ? 'bg-green-100 text-green-800' :
+                            pr['예정가_산정방법'] === 'LLM 산정' ? 'bg-purple-100 text-purple-800' :
+                            'bg-orange-100 text-orange-800'
+                        }">${pr['예정가_산정방법'] || '-'}</span>
+                    </td>
+                    <td class="px-3 py-2 text-right">₩${(pr['입찰예정가'] || 0).toLocaleString()}</td>
+                    <td class="px-3 py-2">${pr['LLM응답']?.['신뢰도'] || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ============================================
+        // STEP 7: 견적 수신 확인 (Mock)
+        // ============================================
+        function populateStep7() {
+            if (!quotationData.length) return;
+            
+            // Initialize mock status if not done
+            if (Object.keys(mockQuoteStatus).length === 0) {
+                quotationData.forEach((pr, idx) => {
+                    const rand = Math.random();
+                    mockQuoteStatus[pr['구매요청']] = {
+                        status: rand < 0.7 ? 'received' : rand < 0.9 ? 'pending' : 'overdue',
+                        amount: pr['입찰예정가'] ? Math.round(pr['입찰예정가'] * (0.85 + Math.random() * 0.2)) : 0,
+                        date: rand < 0.7 ? '2026-01-02 14:' + String(Math.floor(Math.random() * 60)).padStart(2, '0') : '-'
+                    };
+                });
+            }
+            
+            const received = Object.values(mockQuoteStatus).filter(s => s.status === 'received').length;
+            const pending = Object.values(mockQuoteStatus).filter(s => s.status === 'pending').length;
+            const overdue = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
+            
+            document.getElementById('s7_received').textContent = received;
+            document.getElementById('s7_pending').textContent = pending;
+            document.getElementById('s7_overdue').textContent = overdue;
+            
+            document.getElementById('s7_quoteList').innerHTML = quotationData.slice(0, 30).map(pr => {
+                const status = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0, date: '-' };
+                const statusBadge = status.status === 'received' ? '<span class="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs">✅ 수신</span>' :
+                                   status.status === 'pending' ? '<span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">⏳ 대기</span>' :
+                                   '<span class="px-1 py-0.5 bg-red-100 text-red-800 rounded text-xs">🔴 미응답</span>';
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                        <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
+                        <td class="px-3 py-2">${statusBadge}</td>
+                        <td class="px-3 py-2 text-right">${status.status === 'received' ? '₩' + status.amount.toLocaleString() : '-'}</td>
+                        <td class="px-3 py-2">${status.date}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function mockOpenQuotes() {
+            alert('견적 오픈 완료! (Mock 시뮬레이션)\n\n- 대기중 견적: 수신 상태로 변경됨');
+            Object.keys(mockQuoteStatus).forEach(key => {
+                if (mockQuoteStatus[key].status === 'pending') {
+                    mockQuoteStatus[key].status = 'received';
+                    mockQuoteStatus[key].date = '2026-01-02 15:' + String(Math.floor(Math.random() * 60)).padStart(2, '0');
+                }
+            });
+            populateStep7();
+        }
+
+        function sendReminderEmails() {
+            const overdueCount = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
+            showSuccess('독려메일 발송 완료', `${overdueCount}개 업체에 독려메일이 발송되었습니다. (Mock)`);
+        }
+
+        // ============================================
+        // STEP 8: 견적 비교 분석 (Mock)
+        // ============================================
+        function populateStep8() {
+            if (!processingResults) return;
+            const summary = processingResults.summary;
+            
+            document.getElementById('s8_total').textContent = summary.total;
+            document.getElementById('s8_auto').textContent = summary.autoComplete;
+            document.getElementById('s8_hitl').textContent = summary.needReview;
+            document.getElementById('s8_llmCalls').textContent = summary.llmCalls;
+            document.getElementById('s8_autoRate').textContent = summary.total > 0 ? `${((summary.autoComplete / summary.total) * 100).toFixed(1)}%` : '0%';
+            document.getElementById('s8_hitlRate').textContent = summary.total > 0 ? `${((summary.needReview / summary.total) * 100).toFixed(1)}%` : '0%';
+            document.getElementById('s8_time').textContent = summary.processingTime || '0';
+            document.getElementById('s8_tokens').textContent = (summary.llmCalls * 1200).toLocaleString();
+            
+            document.getElementById('s8_comparisonList').innerHTML = quotationData.slice(0, 30).map(pr => {
+                const quoteStatus = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0 };
+                const lowestPrice = quoteStatus.status === 'received' ? quoteStatus.amount : pr['입찰예정가'] || 0;
+                const estimatedPrice = pr['입찰예정가'] || 0;
+                const ratio = estimatedPrice > 0 ? ((lowestPrice / estimatedPrice - 1) * 100).toFixed(1) : 0;
+                const isGood = ratio <= 0;
+                
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                        <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
+                        <td class="px-3 py-2 text-right">₩${lowestPrice.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-right ${isGood ? 'text-green-600' : 'text-red-600'}">${ratio > 0 ? '+' : ''}${ratio}%</td>
+                        <td class="px-3 py-2">
+                            <span class="px-1 py-0.5 rounded text-xs ${isGood ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">${isGood ? '✅ 적정' : '⚠️ 검토'}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // MODALS
+        // ============================================
         function openHitlModal(prId) {
             const pr = quotationData.find(p => p['구매요청'] === prId);
             if (!pr) return;
 
             document.getElementById('modalPrId').textContent = prId;
-            
-            const content = document.getElementById('modalContent');
-            content.innerHTML = `
+            document.getElementById('modalContent').innerHTML = `
                 <div class="space-y-4">
                     <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                        <h4 class="font-medium text-orange-800 mb-2">📌 ${pr['계약방식'] === '수의계약' ? '수의계약 적정성' : '최저가 적정성'} 검토 결과: ⚠️ ${pr['수의계약_적정성'] || pr['최저가_적정성'] || '검토필요'}</h4>
-                        
+                        <h4 class="font-medium text-orange-800 mb-2">📌 검토 사유</h4>
                         <div class="bg-white rounded p-3 space-y-2 text-sm">
-                            <div class="flex justify-between"><span>견적단가</span><span class="font-medium">₩${Math.round(pr['견적단가'] || 0).toLocaleString()}</span></div>
+                            <div class="flex justify-between"><span>견적단가</span><span class="font-medium">₩${Math.round(pr['견적단가'] || pr['입찰예정가'] * 0.95 || 0).toLocaleString()}</span></div>
                             <div class="flex justify-between"><span>입찰예정가</span><span class="font-medium">₩${(pr['입찰예정가'] || 0).toLocaleString()}</span></div>
                             <div class="flex justify-between"><span>최근발주단가</span><span class="font-medium">₩${Math.round(pr['최근발주단가'] || 0).toLocaleString()}</span></div>
                             <hr>
-                            ${pr['계약방식'] === '수의계약' ? `
-                                <div class="flex justify-between"><span>단가변동률</span><span class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}% ${(pr['단가변동률'] || 0) > 15 ? '⚠️' : ''}</span></div>
-                            ` : `
-                                <div class="flex justify-between"><span>예정가 대비</span><span class="font-medium">${((pr['견적단가'] / pr['예정단가'] - 1) * 100).toFixed(1)}%</span></div>
-                            `}
+                            <div class="flex justify-between"><span>단가변동률</span><span class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}%</span></div>
                         </div>
-                        
                         <div class="mt-3 p-3 bg-purple-50 rounded text-sm">
                             <p class="font-medium text-purple-800">🧠 AI 분석:</p>
-                            <p class="text-gray-700 mt-1">${pr['계약방식'] === '수의계약' 
-                                ? '단가변동률이 허용범위(15%)를 초과하여 협상이 필요합니다. 최근 원자재 가격 변동 여부를 확인하시고, 업체와 단가 협상을 진행하시기 바랍니다.'
-                                : '견적단가가 예정가 대비 낮아 덤핑 가능성이 있습니다. 해당 업체의 과거 납품 품질 이력을 확인하시고, 필요시 품질보증 조건 추가를 권고합니다.'
-                            }</p>
+                            <p class="text-gray-700 mt-1">단가변동률이 허용범위(15%)를 초과하여 검토가 필요합니다.</p>
                         </div>
                     </div>
-
                     <div class="border rounded-lg p-4">
                         <h4 class="font-medium mb-3">담당자 결정</h4>
                         <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="decision" value="approve" class="mr-2">
-                                <span>적정 (진행)</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="decision" value="renegotiate" class="mr-2">
-                                <span>재견적 요청</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="decision" value="conditional" class="mr-2" checked>
-                                <span>조건부 승인</span>
-                            </label>
+                            <label class="flex items-center"><input type="radio" name="decision" value="approve" class="mr-2"><span>적정 (진행)</span></label>
+                            <label class="flex items-center"><input type="radio" name="decision" value="renegotiate" class="mr-2"><span>재견적 요청</span></label>
+                            <label class="flex items-center"><input type="radio" name="decision" value="conditional" class="mr-2" checked><span>조건부 승인</span></label>
                         </div>
-                        
                         <div class="mt-4">
                             <label class="text-sm text-gray-600">조건/사유:</label>
-                            <textarea id="decisionReason" class="w-full border rounded p-2 mt-1 text-sm" rows="3" placeholder="결정 사유를 입력하세요...">품질보증기간 2년 조건 추가 후 진행</textarea>
+                            <textarea id="decisionReason" class="w-full border rounded p-2 mt-1 text-sm" rows="2" placeholder="결정 사유...">품질보증기간 2년 조건 추가 후 진행</textarea>
                         </div>
                     </div>
                 </div>
             `;
-            
             document.getElementById('hitlModal').classList.remove('hidden');
             document.getElementById('hitlModal').dataset.prId = prId;
         }
@@ -1551,32 +1539,23 @@
 
         function submitHitlDecision() {
             const prId = document.getElementById('hitlModal').dataset.prId;
-            const decision = document.querySelector('input[name="decision"]:checked')?.value;
-            const reason = document.getElementById('decisionReason').value;
-            
-            // Update PR status
             const pr = quotationData.find(p => p['구매요청'] === prId);
             if (pr) {
                 pr['처리상태'] = '자동완료';
                 pr['HITL필요'] = false;
-                pr['담당자결정'] = decision;
-                pr['결정사유'] = reason;
             }
-            
             closeHitlModal();
             renderPRList();
-            renderDetailView(prId);
-            alert('결정이 저장되었습니다.');
+            populateStep5();
+            showSuccess('결정 완료', '검토 결과가 저장되었습니다.');
         }
 
         async function approvePR(prId) {
             try {
                 await axios.post(`/api/quotations/${prId}/approve`);
                 const pr = quotationData.find(p => p['구매요청'] === prId);
-                if (pr) {
-                    pr['승인상태'] = '승인완료';
-                }
-                alert('승인 완료');
+                if (pr) pr['승인상태'] = '승인완료';
+                showSuccess('승인 완료', `PR ${prId}가 승인되었습니다.`);
                 renderPRList();
                 renderDetailView(prId);
             } catch (e) {
@@ -1584,28 +1563,90 @@
             }
         }
 
-        // Final Report (Step 4)
-        function updateFinalReport() {
-            if (!processingResults || !processingResults.summary) return;
-
-            const summary = processingResults.summary;
-            
-            document.getElementById('totalProcessed').textContent = `${summary.total}건 처리 완료`;
-            document.getElementById('finalAutoCount').textContent = `${summary.autoComplete}건`;
-            document.getElementById('finalHitlCount').textContent = `${summary.needReview}건`;
-            document.getElementById('finalUrgent').textContent = summary.urgent;
-            document.getElementById('finalNormal').textContent = summary.normal;
-            document.getElementById('finalFlexible').textContent = summary.flexible;
-            document.getElementById('finalLlmCalls').textContent = summary.llmCalls;
-            document.getElementById('finalTime').textContent = summary.processingTime;
-
-            const autoPercent = summary.total > 0 ? (summary.autoComplete / summary.total) * 100 : 0;
-            const hitlPercent = summary.total > 0 ? (summary.needReview / summary.total) * 100 : 0;
-            
-            document.getElementById('autoBar').style.width = `${autoPercent}%`;
-            document.getElementById('hitlBar').style.width = `${hitlPercent}%`;
+        // Email Modals
+        function openBatchEmailModal() {
+            const invalidPR = processingResults?.invalidPR || [];
+            if (invalidPR.length === 0) { alert('발송할 누락 PR이 없습니다.'); return; }
+            const grouped = {};
+            invalidPR.forEach(pr => {
+                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+                if (!grouped[manager]) grouped[manager] = [];
+                grouped[manager].push(pr);
+            });
+            let managerList = '';
+            Object.entries(grouped).forEach(([manager, prs]) => {
+                managerList += `<p class="text-sm">• ${manager}: ${prs.length}건</p>`;
+            });
+            document.getElementById('batchEmailContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="font-medium mb-2">발송 대상: ${Object.keys(grouped).length}명</p>
+                        ${managerList}
+                    </div>
+                    <p class="text-gray-600">총 <strong>${invalidPR.length}건</strong>의 누락 PR 안내 메일을 발송합니다.</p>
+                </div>
+            `;
+            document.getElementById('batchEmailModal').classList.remove('hidden');
         }
 
+        function closeBatchEmailModal() {
+            document.getElementById('batchEmailModal').classList.add('hidden');
+        }
+
+        function sendBatchEmails() {
+            const invalidPR = processingResults?.invalidPR || [];
+            const grouped = {};
+            invalidPR.forEach(pr => {
+                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+                if (!grouped[manager]) grouped[manager] = [];
+                grouped[manager].push(pr);
+            });
+            invalidPR.forEach((pr, idx) => { sentEmails[idx] = { sentAt: new Date().toISOString() }; });
+            closeBatchEmailModal();
+            showSuccess('이메일 발송 완료', `${Object.keys(grouped).length}명에게 ${invalidPR.length}건의 메일이 발송되었습니다.`);
+        }
+
+        function openEmailPreview(prIndex) {
+            const invalidPR = processingResults?.invalidPR || [];
+            const pr = invalidPR[prIndex];
+            if (!pr) return;
+            const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
+            document.getElementById('emailPreviewContent').innerHTML = `
+                <div class="border rounded-lg overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-3 border-b">
+                        <p class="text-sm"><strong>To:</strong> ${manager}</p>
+                        <p class="text-sm"><strong>Subject:</strong> [PR 필수항목 누락] 정보 업데이트 요청</p>
+                    </div>
+                    <div class="p-4 space-y-3 text-sm">
+                        <p>안녕하세요, <strong>${manager}</strong>님</p>
+                        <p>아래 구매요청 건에 필수항목이 누락되어 처리가 불가합니다.</p>
+                        <div class="bg-gray-50 border rounded p-3">
+                            <p><strong>PR번호:</strong> ${pr['구매요청'] || '-'}</p>
+                            <p><strong>자재번호:</strong> ${pr['자재번호'] || '-'}</p>
+                            <p><strong>누락항목:</strong> <span class="text-red-600">${pr['누락항목'] || '-'}</span></p>
+                        </div>
+                        <p>감사합니다.<br>구매팀 AI Agent</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('emailPreviewModal').classList.remove('hidden');
+        }
+
+        function closeEmailPreviewModal() {
+            document.getElementById('emailPreviewModal').classList.add('hidden');
+        }
+
+        function showSuccess(title, message) {
+            document.getElementById('successTitle').textContent = title;
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // Final Actions
         async function downloadExcel() {
             try {
                 const response = await axios.get('/api/export', { responseType: 'blob' });
@@ -1621,194 +1662,10 @@
             }
         }
 
-        async function batchApprove() {
-            const autoCompletePRs = quotationData
-                .filter(p => p['처리상태'] === '자동완료')
-                .map(p => p['구매요청']);
-
-            if (autoCompletePRs.length === 0) {
-                alert('승인할 PR이 없습니다.');
-                return;
-            }
-
-            if (!confirm(`${autoCompletePRs.length}건을 일괄 승인하시겠습니까?`)) {
-                return;
-            }
-
-            try {
-                await axios.post('/api/quotations/batch-approve', { ids: autoCompletePRs });
-                alert(`${autoCompletePRs.length}건 일괄 승인 완료 (SRM 전송 시뮬레이션)`);
-            } catch (e) {
-                alert('일괄 승인 실패: ' + e.message);
-            }
-        }
-
-        // ============================================
-        // Email Functions
-        // ============================================
-        
-        // State for tracking sent emails
-        let sentEmails = {};
-
-        // Open batch email confirmation modal
-        function openBatchEmailModal() {
-            const invalidPR = processingResults?.invalidPR || [];
-            if (invalidPR.length === 0) {
-                alert('발송할 누락 PR이 없습니다.');
-                return;
-            }
-
-            // Group by 담당자
-            const grouped = {};
-            invalidPR.forEach(pr => {
-                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
-                if (!grouped[manager]) grouped[manager] = [];
-                grouped[manager].push(pr);
-            });
-
-            const managerCount = Object.keys(grouped).length;
-            const prCount = invalidPR.length;
-
-            let managerList = '';
-            Object.entries(grouped).forEach(([manager, prs]) => {
-                managerList += `<p class="text-sm">• ${manager}: ${prs.length}건</p>`;
-            });
-
-            document.getElementById('batchEmailContent').innerHTML = `
-                <div class="space-y-4">
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <p class="font-medium mb-2">발송 대상: ${managerCount}명</p>
-                        ${managerList}
-                    </div>
-                    <p class="text-gray-600">총 <strong>${prCount}건</strong>의 누락 PR 안내 메일을 발송합니다.</p>
-                </div>
-            `;
-
-            document.getElementById('batchEmailModal').classList.remove('hidden');
-        }
-
-        function closeBatchEmailModal() {
-            document.getElementById('batchEmailModal').classList.add('hidden');
-        }
-
-        // Send batch emails
-        function sendBatchEmails() {
-            const invalidPR = processingResults?.invalidPR || [];
-            
-            // Group by 담당자
-            const grouped = {};
-            invalidPR.forEach(pr => {
-                const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
-                if (!grouped[manager]) grouped[manager] = [];
-                grouped[manager].push(pr);
-            });
-
-            // Mark all as sent
-            invalidPR.forEach((pr, idx) => {
-                sentEmails[idx] = {
-                    sentAt: new Date().toISOString(),
-                    recipient: pr['담당자'] || pr['구매요청자'] || '담당자미지정'
-                };
-            });
-
-            const managerCount = Object.keys(grouped).length;
-            const prCount = invalidPR.length;
-
-            closeBatchEmailModal();
-
-            // Update the table to show "발송완료" status
-            updateInvalidPRListWithStatus();
-
-            // Show success modal
-            document.getElementById('emailSentMessage').textContent = 
-                `${managerCount}명에게 ${prCount}건의 메일이 발송되었습니다.`;
-            document.getElementById('emailSentModal').classList.remove('hidden');
-        }
-
-        function closeEmailSentModal() {
-            document.getElementById('emailSentModal').classList.add('hidden');
-        }
-
-        // Update invalid PR list to show sent status
-        function updateInvalidPRListWithStatus() {
-            const invalidPR = processingResults?.invalidPR || [];
-            
-            document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 50).map((pr, idx) => {
-                const isSent = sentEmails[idx];
-                return `
-                    <tr class="border-b hover:bg-gray-50 ${isSent ? 'bg-green-50' : ''}">
-                        <td class="px-4 py-3">${isSent ? '✅' : '⚠️'} ${pr['구매요청'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['자재번호'] || '-'}</td>
-                        <td class="px-4 py-3 text-red-600">${pr['누락항목'] || '-'}</td>
-                        <td class="px-4 py-3">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
-                        <td class="px-4 py-3">
-                            ${isSent ? `
-                                <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200">
-                                    ✉️ 발송완료
-                                </button>
-                            ` : `
-                                <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
-                                    📧 미리보기
-                                </button>
-                            `}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // Open email preview modal for a specific PR
-        function openEmailPreview(prIndex) {
-            const invalidPR = processingResults?.invalidPR || [];
-            const pr = invalidPR[prIndex];
-            if (!pr) return;
-
-            const manager = pr['담당자'] || pr['구매요청자'] || '담당자미지정';
-            const email = `${manager.replace(/\s/g, '').toLowerCase()}@company.com`;
-            const isSent = sentEmails[prIndex];
-
-            document.getElementById('emailPreviewContent').innerHTML = `
-                <div class="space-y-4">
-                    ${isSent ? `
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700 text-sm">
-                            ✅ 발송완료: ${new Date(isSent.sentAt).toLocaleString()}
-                        </div>
-                    ` : ''}
-                    
-                    <div class="border rounded-lg overflow-hidden">
-                        <div class="bg-gray-50 px-4 py-3 border-b">
-                            <p class="text-sm"><strong>To:</strong> ${manager} &lt;${email}&gt;</p>
-                            <p class="text-sm"><strong>Subject:</strong> [PR 필수항목 누락] 1건 정보 업데이트 요청</p>
-                        </div>
-                        
-                        <div class="p-4 space-y-4 text-sm">
-                            <p>안녕하세요, <strong>${manager}</strong>님</p>
-                            
-                            <p>아래 구매요청 건에 필수항목이 누락되어 처리가 불가합니다.<br>
-                            확인 후 업데이트 부탁드립니다.</p>
-                            
-                            <div class="bg-gray-50 border rounded-lg p-4 space-y-2">
-                                <p class="font-bold">■ 누락 PR 내역</p>
-                                <table class="w-full text-sm">
-                                    <tr><td class="py-1 text-gray-600 w-24">PR번호:</td><td class="font-medium">${pr['구매요청'] || '-'}</td></tr>
-                                    <tr><td class="py-1 text-gray-600">자재번호:</td><td class="font-medium">${pr['자재번호'] || '-'}</td></tr>
-                                    <tr><td class="py-1 text-gray-600">자재내역:</td><td class="font-medium">${pr['내역'] || '-'}</td></tr>
-                                    <tr><td class="py-1 text-gray-600">누락항목:</td><td class="font-medium text-red-600">${pr['누락항목'] || '-'}</td></tr>
-                                </table>
-                            </div>
-                            
-                            <p>감사합니다.</p>
-                            <p class="text-gray-600">구매팀 AI Agent</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('emailPreviewModal').classList.remove('hidden');
-        }
-
-        function closeEmailPreviewModal() {
-            document.getElementById('emailPreviewModal').classList.add('hidden');
+        function batchSRMTransfer() {
+            const autoCompletePRs = quotationData.filter(p => p['처리상태'] === '자동완료');
+            if (!confirm(`${autoCompletePRs.length}건을 SRM으로 일괄 전송하시겠습니까?`)) return;
+            showSuccess('SRM 전송 완료', `${autoCompletePRs.length}건이 SRM으로 전송되었습니다. (시뮬레이션)`);
         }
     </script>
 </body>
