@@ -1383,7 +1383,9 @@
             document.getElementById('s3_methodFilter').textContent = filterLabel;
             document.getElementById('s3_methodCount').textContent = `${filtered.length}건`;
             
-            document.getElementById('s3_methodList').innerHTML = filtered.map(pr => `
+            document.getElementById('s3_methodList').innerHTML = filtered.map(pr => {
+                const selectionReason = pr['계약방식_선정사유'] || (pr['계약분류'] === '표준단가' ? '표준단가' : '비표준계약 및 계약외');
+                return `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
@@ -1391,9 +1393,9 @@
                     <td class="px-2 py-2">
                         <span class="text-xs ${pr['계약분류'] === '표준단가' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약분류'] === '표준단가' ? '배량 후 발주' : '입찰(견적)진행'}</span>
                     </td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['계약분류'] === '표준단가' ? '표준단가' : '비표준계약 및 계약외'}">${pr['계약분류'] === '표준단가' ? '표준단가' : '비표준계약 및 계약외'}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[150px]" title="${selectionReason}">${selectionReason.substring(0, 20)}${selectionReason.length > 20 ? '...' : ''}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         // ============================================
@@ -1513,6 +1515,12 @@
                             <div><span class="text-gray-500">단가계약여부</span><p class="font-medium">${pr['계약분류'] || '-'}</p></div>
                             <div><span class="text-gray-500">단가계약번호</span><p class="font-medium">${pr['단가계약번호'] || '-'}</p></div>
                         </div>
+                        ${pr['계약방식_선정사유'] ? `
+                        <div class="mt-2 pt-2 border-t border-gray-200">
+                            <span class="text-gray-500 text-xs">선정사유</span>
+                            <p class="font-medium text-xs mt-1 text-blue-700 leading-relaxed">${pr['계약방식_선정사유']}</p>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <!-- 입찰조건 -->
