@@ -114,14 +114,14 @@
                     <!-- Step 5 -->
                     <div class="step-nav" data-step="5" onclick="navigateToStep(5)">
                         <div class="step-circle step-pending" id="step-circle-5">5</div>
-                        <span class="step-label">견적의뢰 세부<br>내용 검토</span>
+                        <span class="step-label">입찰 예정가<br>산출</span>
                     </div>
                     <div class="step-line" data-line="5"></div>
                     
                     <!-- Step 6 -->
                     <div class="step-nav" data-step="6" onclick="navigateToStep(6)">
                         <div class="step-circle step-pending" id="step-circle-6">6</div>
-                        <span class="step-label">입찰 예정가<br>산출</span>
+                        <span class="step-label">견적의뢰 세부<br>내용 검토</span>
                     </div>
                     <div class="step-line" data-line="6"></div>
                     
@@ -531,13 +531,77 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(5)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 견적 의뢰 세부 내용 검토 →
+                        다음: 입찰 예정가 산출 →
                     </button>
                 </div>
             </div>
 
-            <!-- ======================= STEP 5: HITL 검토 ======================= -->
+            <!-- ======================= STEP 5: 입찰예정가 산정 ======================= -->
             <div id="step5" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">💰 입찰 예정가 산출 <span id="s5_priceFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h2>
+                        <span class="text-xs text-gray-400" id="s5_priceCount">0건</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 mb-4">
+                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterPriceList('자재+내역 일치')" id="card_exact">
+                            <p class="text-xl font-bold text-blue-600" id="s5_exact">0</p>
+                            <p class="text-xs text-gray-600">자재+내역 일치</p>
+                        </div>
+                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" onclick="filterPriceList('그룹 평균')" id="card_group">
+                            <p class="text-xl font-bold text-green-600" id="s5_group">0</p>
+                            <p class="text-xs text-gray-600">그룹 평균</p>
+                        </div>
+                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('LLM 산정')" id="card_llm">
+                            <p class="text-xl font-bold text-purple-600" id="s5_llm">0</p>
+                            <p class="text-xs text-gray-600">LLM 산정</p>
+                        </div>
+                        <div class="mini-card border-l-4 border-orange-500 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all" onclick="filterPriceList('기본값')" id="card_default">
+                            <p class="text-xl font-bold text-orange-600" id="s5_default">0</p>
+                            <p class="text-xs text-gray-600">기본값</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mb-3">
+                        <input type="text" id="s5_priceSearch" placeholder="검색 (PR번호, 자재번호, 내역...)" 
+                            class="flex-1 text-xs border rounded px-2 py-1" oninput="filterPriceList(s5PriceFilter)">
+                        <button onclick="filterPriceList('all')" class="text-xs text-blue-600 hover:underline">전체보기</button>
+                    </div>
+
+                    <div class="border rounded max-h-72 overflow-y-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-2 py-2 text-left">PR번호</th>
+                                    <th class="px-2 py-2 text-left">자재번호</th>
+                                    <th class="px-2 py-2 text-left">자재내역</th>
+                                    <th class="px-2 py-2 text-left">산정방법</th>
+                                    <th class="px-2 py-2 text-right">입찰예정가</th>
+                                    <th class="px-2 py-2 text-center">가격조정</th>
+                                </tr>
+                            </thead>
+                            <tbody id="s5_priceList"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="priceAlert" class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 hidden">
+                        <i class="fas fa-info-circle mr-1"></i>기본값 적용 <span id="defaultCount">0</span>건 → 담당자 예정가 직접 입력 권장
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(4)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(6)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 견적의뢰 세부 내용 검토 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 6: HITL 검토 ======================= -->
+            <div id="step6" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg font-bold">⚠️ 견적 의뢰 세부 내용 검토 (HITL)</h2>
@@ -554,70 +618,6 @@
                         <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
                         <p class="text-lg">검토가 필요한 항목이 없습니다.</p>
                         <p class="text-sm">모든 PR이 자동으로 처리되었습니다.</p>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex justify-between">
-                    <button onclick="goToStep(4)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        ← 이전
-                    </button>
-                    <button onclick="goToStep(6)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 입찰 예정가 산출 →
-                    </button>
-                </div>
-            </div>
-
-            <!-- ======================= STEP 6: 입찰예정가 산정 ======================= -->
-            <div id="step6" class="step-content hidden">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">💰 입찰 예정가 산출 <span id="s6_priceFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h2>
-                        <span class="text-xs text-gray-400" id="s6_priceCount">0건</span>
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-4 mb-4">
-                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterPriceList('자재+내역 일치')" id="card_exact">
-                            <p class="text-xl font-bold text-blue-600" id="s6_exact">0</p>
-                            <p class="text-xs text-gray-600">자재+내역 일치</p>
-                        </div>
-                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" onclick="filterPriceList('그룹 평균')" id="card_group">
-                            <p class="text-xl font-bold text-green-600" id="s6_group">0</p>
-                            <p class="text-xs text-gray-600">그룹 평균</p>
-                        </div>
-                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('LLM 산정')" id="card_llm">
-                            <p class="text-xl font-bold text-purple-600" id="s6_llm">0</p>
-                            <p class="text-xs text-gray-600">LLM 산정</p>
-                        </div>
-                        <div class="mini-card border-l-4 border-orange-500 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all" onclick="filterPriceList('기본값')" id="card_default">
-                            <p class="text-xl font-bold text-orange-600" id="s6_default">0</p>
-                            <p class="text-xs text-gray-600">기본값</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 mb-3">
-                        <input type="text" id="s6_priceSearch" placeholder="검색 (PR번호, 자재번호, 내역...)" 
-                            class="flex-1 text-xs border rounded px-2 py-1" oninput="filterPriceList(s6PriceFilter)">
-                        <button onclick="filterPriceList('all')" class="text-xs text-blue-600 hover:underline">전체보기</button>
-                    </div>
-
-                    <div class="border rounded max-h-72 overflow-y-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th class="px-2 py-2 text-left">PR번호</th>
-                                    <th class="px-2 py-2 text-left">자재번호</th>
-                                    <th class="px-2 py-2 text-left">자재내역</th>
-                                    <th class="px-2 py-2 text-left">산정방법</th>
-                                    <th class="px-2 py-2 text-right">입찰예정가</th>
-                                    <th class="px-2 py-2 text-center">가격조정</th>
-                                </tr>
-                            </thead>
-                            <tbody id="s6_priceList"></tbody>
-                        </table>
-                    </div>
-
-                    <div id="priceAlert" class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 hidden">
-                        <i class="fas fa-info-circle mr-1"></i>기본값 적용 <span id="defaultCount">0</span>건 → 담당자 예정가 직접 입력 권장
                     </div>
                 </div>
 
@@ -1563,53 +1563,11 @@
         }
 
         // ============================================
-        // STEP 5: HITL 검토
+        // STEP 5: 입찰예정가 산정
         // ============================================
-        function populateStep5() {
-            if (!processingResults) return;
-            
-            const hitlItems = quotationData.filter(pr => pr['HITL필요']);
-            document.getElementById('hitlTotalCount').textContent = hitlItems.length;
-            
-            if (hitlItems.length === 0) {
-                document.getElementById('noHitlMessage').classList.remove('hidden');
-                document.getElementById('hitlList').classList.add('hidden');
-                return;
-            }
-            
-            document.getElementById('noHitlMessage').classList.add('hidden');
-            document.getElementById('hitlList').classList.remove('hidden');
-            
-            document.getElementById('hitlList').innerHTML = hitlItems.map(pr => `
-                <div class="border rounded-lg p-4 hover:shadow transition-shadow">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="font-bold">${pr['구매요청']}</span>
-                            <span class="text-sm text-gray-500 ml-2">${pr['계약방식'] || '-'}</span>
-                        </div>
-                        <span class="px-2 py-1 rounded text-xs ${pr['긴급도'] === '긴급' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${pr['긴급도_신호']} ${pr['긴급도']}</span>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-2 truncate">${pr['내역'] || '-'}</p>
-                    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
-                        <div><span class="text-gray-500">입찰예정가</span><p class="font-medium">₩${(pr['입찰예정가'] || 0).toLocaleString()}</p></div>
-                        <div><span class="text-gray-500">최근발주단가</span><p class="font-medium">₩${(pr['최근발주단가'] || 0).toLocaleString()}</p></div>
-                        <div><span class="text-gray-500">단가변동률</span><p class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}%</p></div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button onclick="openHitlModal('${pr['구매요청']}')" class="px-4 py-2 bg-orange-600 text-white rounded text-sm hover:bg-orange-700">
-                            검토하기 →
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ============================================
-        // STEP 6: 입찰예정가 산정
-        // ============================================
-        let s6PriceFilter = 'all';
+        let s5PriceFilter = 'all';
         
-        function populateStep6() {
+        function populateStep5() {
             if (!processingResults) return;
             const priceMethods = processingResults.summary.priceMethodSummary || {};
             
@@ -1618,10 +1576,10 @@
             const llm = priceMethods['LLM 산정'] || 0;
             const def = priceMethods['기본값'] || 0;
             
-            document.getElementById('s6_exact').textContent = exact.toLocaleString();
-            document.getElementById('s6_group').textContent = group.toLocaleString();
-            document.getElementById('s6_llm').textContent = llm.toLocaleString();
-            document.getElementById('s6_default').textContent = def.toLocaleString();
+            document.getElementById('s5_exact').textContent = exact.toLocaleString();
+            document.getElementById('s5_group').textContent = group.toLocaleString();
+            document.getElementById('s5_llm').textContent = llm.toLocaleString();
+            document.getElementById('s5_default').textContent = def.toLocaleString();
             
             if (def > 0) {
                 document.getElementById('priceAlert').classList.remove('hidden');
@@ -1629,11 +1587,11 @@
             }
             
             // Initial render
-            filterPriceList(s6PriceFilter);
+            filterPriceList(s5PriceFilter);
         }
         
         function filterPriceList(filterType) {
-            s6PriceFilter = filterType;
+            s5PriceFilter = filterType;
             
             // Update card selection styles
             ['card_exact', 'card_group', 'card_llm', 'card_default'].forEach(id => {
@@ -1662,7 +1620,7 @@
             }
             
             // 검색 필터링
-            const searchTerm = (document.getElementById('s6_priceSearch')?.value || '').toLowerCase().trim();
+            const searchTerm = (document.getElementById('s5_priceSearch')?.value || '').toLowerCase().trim();
             if (searchTerm) {
                 filtered = filtered.filter(pr => 
                     (pr['구매요청'] || '').toLowerCase().includes(searchTerm) ||
@@ -1671,10 +1629,10 @@
                 );
             }
             
-            document.getElementById('s6_priceFilter').textContent = filterLabel;
-            document.getElementById('s6_priceCount').textContent = `${filtered.length}건`;
+            document.getElementById('s5_priceFilter').textContent = filterLabel;
+            document.getElementById('s5_priceCount').textContent = `${filtered.length}건`;
             
-            document.getElementById('s6_priceList').innerHTML = filtered.map((pr, idx) => {
+            document.getElementById('s5_priceList').innerHTML = filtered.map((pr, idx) => {
                 const originalIdx = quotationData.indexOf(pr);
                 return `
                 <tr class="border-b hover:bg-gray-50 ${pr['예정가_산정방법'] === '기본값' ? 'bg-orange-50' : ''}" id="price-row-${originalIdx}">
@@ -1749,6 +1707,48 @@
                     adjustEl.textContent = '';
                 }
             }
+        }
+
+        // ============================================
+        // STEP 6: HITL 검토
+        // ============================================
+        function populateStep6() {
+            if (!processingResults) return;
+            
+            const hitlItems = quotationData.filter(pr => pr['HITL필요']);
+            document.getElementById('hitlTotalCount').textContent = hitlItems.length;
+            
+            if (hitlItems.length === 0) {
+                document.getElementById('noHitlMessage').classList.remove('hidden');
+                document.getElementById('hitlList').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('noHitlMessage').classList.add('hidden');
+            document.getElementById('hitlList').classList.remove('hidden');
+            
+            document.getElementById('hitlList').innerHTML = hitlItems.map(pr => `
+                <div class="border rounded-lg p-4 hover:shadow transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="font-bold">${pr['구매요청']}</span>
+                            <span class="text-sm text-gray-500 ml-2">${pr['계약방식'] || '-'}</span>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs ${pr['긴급도'] === '긴급' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${pr['긴급도_신호']} ${pr['긴급도']}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2 truncate">${pr['내역'] || '-'}</p>
+                    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div><span class="text-gray-500">입찰예정가</span><p class="font-medium">₩${(pr['입찰예정가'] || 0).toLocaleString()}</p></div>
+                        <div><span class="text-gray-500">최근발주단가</span><p class="font-medium">₩${(pr['최근발주단가'] || 0).toLocaleString()}</p></div>
+                        <div><span class="text-gray-500">단가변동률</span><p class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}%</p></div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button onclick="openHitlModal('${pr['구매요청']}')" class="px-4 py-2 bg-orange-600 text-white rounded text-sm hover:bg-orange-700">
+                            검토하기 →
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         // ============================================
@@ -1935,7 +1935,7 @@
             }
             closeHitlModal();
             renderPRList();
-            populateStep5();
+            populateStep6();
             showSuccess('결정 완료', '검토 결과가 저장되었습니다.');
         }
 
