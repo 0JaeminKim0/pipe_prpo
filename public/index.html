@@ -877,6 +877,21 @@
         let mockQuoteStatus = {}; // For step 7 mock
 
         // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        // Excel 시리얼 날짜를 YYYY-MM-DD 형식으로 변환
+        function formatExcelDate(serial) {
+            if (!serial || typeof serial !== 'number') return null;
+            // Excel 시리얼 날짜: 1900-01-01 기준 (단, Excel은 1900-02-29를 잘못 계산하므로 -2 보정)
+            const excelEpoch = new Date(1899, 11, 30); // 1899-12-30
+            const date = new Date(excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ============================================
         // INITIALIZATION
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -1260,7 +1275,7 @@
                     <td class="px-2 py-2 text-xs">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600" title="${pr['자재번호'] || ''}">${(pr['자재번호'] || '-').substring(0, 12)}${(pr['자재번호']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 10)}${(pr['내역']?.length > 10) ? '...' : ''}</td>
-                    <td class="px-2 py-2 text-xs">${pr['PR납기일'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs">${pr['PR납기일_변환'] || formatExcelDate(pr['PR납기일']) || '-'}</td>
                     <td class="px-2 py-2 text-xs">${pr['LEAD_TIME'] || '-'}</td>
                     <td class="px-2 py-2 text-xs ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
                     <td class="px-2 py-2">
