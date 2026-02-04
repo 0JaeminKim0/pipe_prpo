@@ -226,7 +226,7 @@
                         <div id="summaryLoaded" class="hidden space-y-4">
                             <div class="mini-card border-l-4 border-blue-500">
                                 <p class="text-2xl font-bold text-blue-600" id="prCount">0</p>
-                                <p class="text-xs text-gray-600">PR 건수</p>
+                                <p class="text-xs text-gray-600">PR 건수 (원본)</p>
                             </div>
                             <div class="mini-card border-l-4 border-green-500">
                                 <p class="text-2xl font-bold text-green-600" id="poCount">0</p>
@@ -321,10 +321,12 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-2 py-2 text-left">PR번호</th>
-                                        <th class="px-2 py-2 text-left">자재번호</th>
-                                        <th class="px-2 py-2 text-left">자재내역</th>
-                                        <th class="px-2 py-2 text-left">계약분류</th>
+                                        <th class="px-2 py-2 text-left text-xs">PR번호</th>
+                                        <th class="px-2 py-2 text-left text-xs">자재번호</th>
+                                        <th class="px-2 py-2 text-left text-xs">자재내역</th>
+                                        <th class="px-2 py-2 text-left text-xs">계약분류</th>
+                                        <th class="px-2 py-2 text-left text-xs">단가계약번호</th>
+                                        <th class="px-2 py-2 text-left text-xs">자동배량그룹</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s2_contractList"></tbody>
@@ -357,11 +359,13 @@
                             <table class="w-full text-sm">
                                 <thead class="bg-gray-50 sticky top-0">
                                     <tr>
-                                        <th class="px-2 py-2 text-left">PR번호</th>
-                                        <th class="px-2 py-2 text-left">자재번호</th>
-                                        <th class="px-2 py-2 text-left">자재내역</th>
-                                        <th class="px-2 py-2 text-left">잔여일</th>
-                                        <th class="px-2 py-2 text-left">긴급도</th>
+                                        <th class="px-2 py-2 text-left text-xs">PR번호</th>
+                                        <th class="px-2 py-2 text-left text-xs">자재번호</th>
+                                        <th class="px-2 py-2 text-left text-xs">자재내역</th>
+                                        <th class="px-2 py-2 text-left text-xs">PR납기일</th>
+                                        <th class="px-2 py-2 text-left text-xs">LEAD_TIME</th>
+                                        <th class="px-2 py-2 text-left text-xs">잔여일</th>
+                                        <th class="px-2 py-2 text-left text-xs">긴급도</th>
                                     </tr>
                                 </thead>
                                 <tbody id="s2_urgencyList"></tbody>
@@ -1160,12 +1164,14 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[120px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 15)}${(pr['내역']?.length > 15) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 10)}${(pr['내역']?.length > 10) ? '...' : ''}</td>
                     <td class="px-2 py-2">
                         <span class="px-1.5 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
                             ${pr['계약분류'] || '-'}
                         </span>
                     </td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['단가계약번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자동배량그룹'] || '-'}</td>
                 </tr>
             `).join('');
         }
@@ -1212,7 +1218,9 @@
                 <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
                     <td class="px-2 py-2 text-xs">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 10)}${(pr['내역']?.length > 10) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs">${pr['PR납기일'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs">${pr['LEAD_TIME'] || '-'}</td>
                     <td class="px-2 py-2 text-xs ${(pr['실제잔여일수'] ?? 999) <= 0 ? 'text-red-600 font-bold' : ''}">${pr['실제잔여일수'] ?? '-'}일</td>
                     <td class="px-2 py-2">
                         <span class="text-xs ${pr['긴급도'] === '긴급' ? 'text-red-600' : pr['긴급도'] === '일반' ? 'text-yellow-600' : 'text-green-600'}">${pr['긴급도'] || '-'}</span>
