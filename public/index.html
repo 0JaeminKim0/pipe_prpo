@@ -1064,7 +1064,7 @@
             results.classList.remove('hidden');
             
             const invalidPR = processingResults.invalidPR || [];
-            const validCount = processingResults.summary.total;
+            const validCount = processingResults.summary.totalPR || allPRData.length || 0;
             
             document.getElementById('validCount2').textContent = validCount.toLocaleString();
             document.getElementById('invalidCount2').textContent = invalidPR.length.toLocaleString();
