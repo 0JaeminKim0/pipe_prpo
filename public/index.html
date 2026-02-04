@@ -121,14 +121,14 @@
                     <!-- Step 6 -->
                     <div class="step-nav" data-step="6" onclick="navigateToStep(6)">
                         <div class="step-circle step-pending" id="step-circle-6">6</div>
-                        <span class="step-label">견적의뢰 세부<br>내용 검토</span>
+                        <span class="step-label">업체 견적<br>수신 결과</span>
                     </div>
                     <div class="step-line" data-line="6"></div>
                     
                     <!-- Step 7 -->
                     <div class="step-nav" data-step="7" onclick="navigateToStep(7)">
                         <div class="step-circle step-pending" id="step-circle-7">7</div>
-                        <span class="step-label">업체 견적<br>수신 결과</span>
+                        <span class="step-label">견적의뢰 세부<br>내용 검토</span>
                     </div>
                     <div class="step-line" data-line="7"></div>
                     
@@ -595,44 +595,13 @@
                         ← 이전
                     </button>
                     <button onclick="goToStep(6)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        다음: 견적의뢰 세부 내용 검토 →
-                    </button>
-                </div>
-            </div>
-
-            <!-- ======================= STEP 6: HITL 검토 ======================= -->
-            <div id="step6" class="step-content hidden">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">⚠️ 견적 의뢰 세부 내용 검토 (HITL)</h2>
-                        <div class="text-sm">
-                            <span class="text-orange-600 font-medium"><span id="hitlTotalCount">0</span>건</span> 검토 필요
-                        </div>
-                    </div>
-
-                    <div id="hitlList" class="space-y-4">
-                        <!-- HITL items will be rendered here -->
-                    </div>
-
-                    <div id="noHitlMessage" class="text-center py-12 text-gray-500 hidden">
-                        <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
-                        <p class="text-lg">검토가 필요한 항목이 없습니다.</p>
-                        <p class="text-sm">모든 PR이 자동으로 처리되었습니다.</p>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex justify-between">
-                    <button onclick="goToStep(5)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        ← 이전
-                    </button>
-                    <button onclick="goToStep(7)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                         다음: 업체 견적 수신 결과 →
                     </button>
                 </div>
             </div>
 
-            <!-- ======================= STEP 7: 견적 수신 확인 (Mock) ======================= -->
-            <div id="step7" class="step-content hidden">
+            <!-- ======================= STEP 6: 견적 수신 확인 (Mock) ======================= -->
+            <div id="step6" class="step-content hidden">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg font-bold">📬 업체 견적 수신 결과</h2>
@@ -641,15 +610,15 @@
 
                     <div class="grid grid-cols-3 gap-4 mb-6">
                         <div class="mini-card border-l-4 border-green-500">
-                            <p class="text-2xl font-bold text-green-600" id="s7_received">0</p>
+                            <p class="text-2xl font-bold text-green-600" id="s6_received">0</p>
                             <p class="text-xs text-gray-600">✅ 견적 수신</p>
                         </div>
                         <div class="mini-card border-l-4 border-yellow-500">
-                            <p class="text-2xl font-bold text-yellow-600" id="s7_pending">0</p>
+                            <p class="text-2xl font-bold text-yellow-600" id="s6_pending">0</p>
                             <p class="text-xs text-gray-600">⏳ 대기중</p>
                         </div>
                         <div class="mini-card border-l-4 border-red-500">
-                            <p class="text-2xl font-bold text-red-600" id="s7_overdue">0</p>
+                            <p class="text-2xl font-bold text-red-600" id="s6_overdue">0</p>
                             <p class="text-xs text-gray-600">🔴 미응답</p>
                         </div>
                     </div>
@@ -677,8 +646,39 @@
                                     <th class="px-3 py-2 text-left">수신일시</th>
                                 </tr>
                             </thead>
-                            <tbody id="s7_quoteList"></tbody>
+                            <tbody id="s6_quoteList"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-between">
+                    <button onclick="goToStep(5)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        ← 이전
+                    </button>
+                    <button onclick="goToStep(7)" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        다음: 견적의뢰 세부 내용 검토 →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================= STEP 7: HITL 검토 ======================= -->
+            <div id="step7" class="step-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">⚠️ 견적 의뢰 세부 내용 검토 (HITL)</h2>
+                        <div class="text-sm">
+                            <span class="text-orange-600 font-medium"><span id="hitlTotalCount">0</span>건</span> 검토 필요
+                        </div>
+                    </div>
+
+                    <div id="hitlList" class="space-y-4">
+                        <!-- HITL items will be rendered here -->
+                    </div>
+
+                    <div id="noHitlMessage" class="text-center py-12 text-gray-500 hidden">
+                        <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                        <p class="text-lg">검토가 필요한 항목이 없습니다.</p>
+                        <p class="text-sm">모든 PR이 자동으로 처리되었습니다.</p>
                     </div>
                 </div>
 
@@ -1710,9 +1710,68 @@
         }
 
         // ============================================
-        // STEP 6: HITL 검토
+        // STEP 6: 견적 수신 확인 (Mock)
         // ============================================
         function populateStep6() {
+            if (!quotationData.length) return;
+            
+            // Initialize mock status if not done
+            if (Object.keys(mockQuoteStatus).length === 0) {
+                quotationData.forEach((pr, idx) => {
+                    const rand = Math.random();
+                    mockQuoteStatus[pr['구매요청']] = {
+                        status: rand < 0.7 ? 'received' : rand < 0.9 ? 'pending' : 'overdue',
+                        amount: pr['입찰예정가'] ? Math.round(pr['입찰예정가'] * (0.85 + Math.random() * 0.2)) : 0,
+                        date: rand < 0.7 ? '2026-01-02 14:' + String(Math.floor(Math.random() * 60)).padStart(2, '0') : '-'
+                    };
+                });
+            }
+            
+            const received = Object.values(mockQuoteStatus).filter(s => s.status === 'received').length;
+            const pending = Object.values(mockQuoteStatus).filter(s => s.status === 'pending').length;
+            const overdue = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
+            
+            document.getElementById('s6_received').textContent = received;
+            document.getElementById('s6_pending').textContent = pending;
+            document.getElementById('s6_overdue').textContent = overdue;
+            
+            document.getElementById('s6_quoteList').innerHTML = quotationData.slice(0, 30).map(pr => {
+                const status = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0, date: '-' };
+                const statusBadge = status.status === 'received' ? '<span class="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs">✅ 수신</span>' :
+                                   status.status === 'pending' ? '<span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">⏳ 대기</span>' :
+                                   '<span class="px-1 py-0.5 bg-red-100 text-red-800 rounded text-xs">🔴 미응답</span>';
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
+                        <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
+                        <td class="px-3 py-2">${statusBadge}</td>
+                        <td class="px-3 py-2 text-right">${status.status === 'received' ? '₩' + status.amount.toLocaleString() : '-'}</td>
+                        <td class="px-3 py-2">${status.date}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function mockOpenQuotes() {
+            alert('견적 오픈 완료! (Mock 시뮬레이션)\n\n- 대기중 견적: 수신 상태로 변경됨');
+            Object.keys(mockQuoteStatus).forEach(key => {
+                if (mockQuoteStatus[key].status === 'pending') {
+                    mockQuoteStatus[key].status = 'received';
+                    mockQuoteStatus[key].date = '2026-01-02 15:' + String(Math.floor(Math.random() * 60)).padStart(2, '0');
+                }
+            });
+            populateStep6();
+        }
+
+        function sendReminderEmails() {
+            const overdueCount = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
+            showSuccess('독려메일 발송 완료', `${overdueCount}개 업체에 독려메일이 발송되었습니다. (Mock)`);
+        }
+
+        // ============================================
+        // STEP 7: HITL 검토
+        // ============================================
+        function populateStep7() {
             if (!processingResults) return;
             
             const hitlItems = quotationData.filter(pr => pr['HITL필요']);
@@ -1749,65 +1808,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        // ============================================
-        // STEP 7: 견적 수신 확인 (Mock)
-        // ============================================
-        function populateStep7() {
-            if (!quotationData.length) return;
-            
-            // Initialize mock status if not done
-            if (Object.keys(mockQuoteStatus).length === 0) {
-                quotationData.forEach((pr, idx) => {
-                    const rand = Math.random();
-                    mockQuoteStatus[pr['구매요청']] = {
-                        status: rand < 0.7 ? 'received' : rand < 0.9 ? 'pending' : 'overdue',
-                        amount: pr['입찰예정가'] ? Math.round(pr['입찰예정가'] * (0.85 + Math.random() * 0.2)) : 0,
-                        date: rand < 0.7 ? '2026-01-02 14:' + String(Math.floor(Math.random() * 60)).padStart(2, '0') : '-'
-                    };
-                });
-            }
-            
-            const received = Object.values(mockQuoteStatus).filter(s => s.status === 'received').length;
-            const pending = Object.values(mockQuoteStatus).filter(s => s.status === 'pending').length;
-            const overdue = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
-            
-            document.getElementById('s7_received').textContent = received;
-            document.getElementById('s7_pending').textContent = pending;
-            document.getElementById('s7_overdue').textContent = overdue;
-            
-            document.getElementById('s7_quoteList').innerHTML = quotationData.slice(0, 30).map(pr => {
-                const status = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0, date: '-' };
-                const statusBadge = status.status === 'received' ? '<span class="px-1 py-0.5 bg-green-100 text-green-800 rounded text-xs">✅ 수신</span>' :
-                                   status.status === 'pending' ? '<span class="px-1 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">⏳ 대기</span>' :
-                                   '<span class="px-1 py-0.5 bg-red-100 text-red-800 rounded text-xs">🔴 미응답</span>';
-                return `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
-                        <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
-                        <td class="px-3 py-2">${statusBadge}</td>
-                        <td class="px-3 py-2 text-right">${status.status === 'received' ? '₩' + status.amount.toLocaleString() : '-'}</td>
-                        <td class="px-3 py-2">${status.date}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function mockOpenQuotes() {
-            alert('견적 오픈 완료! (Mock 시뮬레이션)\n\n- 대기중 견적: 수신 상태로 변경됨');
-            Object.keys(mockQuoteStatus).forEach(key => {
-                if (mockQuoteStatus[key].status === 'pending') {
-                    mockQuoteStatus[key].status = 'received';
-                    mockQuoteStatus[key].date = '2026-01-02 15:' + String(Math.floor(Math.random() * 60)).padStart(2, '0');
-                }
-            });
-            populateStep7();
-        }
-
-        function sendReminderEmails() {
-            const overdueCount = Object.values(mockQuoteStatus).filter(s => s.status === 'overdue').length;
-            showSuccess('독려메일 발송 완료', `${overdueCount}개 업체에 독려메일이 발송되었습니다. (Mock)`);
         }
 
         // ============================================
@@ -1935,7 +1935,7 @@
             }
             closeHitlModal();
             renderPRList();
-            populateStep6();
+            populateStep7();
             showSuccess('결정 완료', '검토 결과가 저장되었습니다.');
         }
 
