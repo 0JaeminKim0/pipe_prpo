@@ -1163,7 +1163,7 @@
             document.getElementById('s2_contractList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600" title="${pr['자재번호'] || ''}">${(pr['자재번호'] || '-').substring(0, 12)}${(pr['자재번호']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 10)}${(pr['내역']?.length > 10) ? '...' : ''}</td>
                     <td class="px-2 py-2">
                         <span class="px-1.5 py-0.5 rounded text-xs ${pr['계약분류'] === '표준단가' ? 'bg-blue-100 text-blue-800' : pr['계약분류'] === 'NA' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
@@ -1217,7 +1217,7 @@
             document.getElementById('s2_urgencyList').innerHTML = filtered.map(pr => `
                 <tr class="border-b hover:bg-gray-50 ${pr['긴급도'] === '긴급' ? 'bg-red-50' : ''}">
                     <td class="px-2 py-2 text-xs">${pr['긴급도_신호'] || '🟡'} ${pr['구매요청'] || '-'}</td>
-                    <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs text-gray-600" title="${pr['자재번호'] || ''}">${(pr['자재번호'] || '-').substring(0, 12)}${(pr['자재번호']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 10)}${(pr['내역']?.length > 10) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs">${pr['PR납기일'] || '-'}</td>
                     <td class="px-2 py-2 text-xs">${pr['LEAD_TIME'] || '-'}</td>
