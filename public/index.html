@@ -248,7 +248,7 @@
                 <div id="validationResults" class="mt-6 hidden">
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold">📋 검증 결과</h3>
+                            <h3 class="font-bold">📋 PR 데이터 확인 및 검증</h3>
                             <div class="flex items-center space-x-4">
                                 <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i><span id="validCount2">0</span>건 유효</span>
                                 <span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i><span id="invalidCount2">0</span>건 누락</span>
@@ -258,20 +258,25 @@
                         <!-- Invalid PR Section -->
                         <div id="invalidSection" class="hidden">
                             <div class="flex justify-between items-center mb-3">
-                                <h4 class="text-sm font-medium text-red-600">⚠️ 누락 PR (이메일 발송 필요)</h4>
+                                <h4 class="text-sm font-medium text-red-600">⚠️ PR 세부 내역 누락 건</h4>
                                 <button onclick="openBatchEmailModal()" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
                                     <i class="fas fa-envelope mr-1"></i>일괄 발송
                                 </button>
                             </div>
-                            <div class="border rounded overflow-hidden max-h-48 overflow-y-auto">
+                            <div class="border rounded overflow-hidden max-h-64 overflow-y-auto">
                                 <table class="w-full text-sm">
                                     <thead class="bg-gray-50 sticky top-0">
                                         <tr>
-                                            <th class="px-3 py-2 text-left">PR번호</th>
-                                            <th class="px-3 py-2 text-left">자재번호</th>
-                                            <th class="px-3 py-2 text-left">누락항목</th>
-                                            <th class="px-3 py-2 text-left">담당자</th>
-                                            <th class="px-3 py-2 text-left">액션</th>
+                                            <th class="px-2 py-2 text-left text-xs">PR번호</th>
+                                            <th class="px-2 py-2 text-center text-xs">자재번호</th>
+                                            <th class="px-2 py-2 text-center text-xs">자재내역</th>
+                                            <th class="px-2 py-2 text-center text-xs">구매요청일</th>
+                                            <th class="px-2 py-2 text-center text-xs">PR납기일</th>
+                                            <th class="px-2 py-2 text-center text-xs">리드타임</th>
+                                            <th class="px-2 py-2 text-center text-xs">소싱그룹</th>
+                                            <th class="px-2 py-2 text-center text-xs">자재그룹</th>
+                                            <th class="px-2 py-2 text-left text-xs">담당자</th>
+                                            <th class="px-2 py-2 text-center text-xs">액션</th>
                                         </tr>
                                     </thead>
                                     <tbody id="invalidPRList"></tbody>
@@ -1062,19 +1067,27 @@
             
             if (invalidPR.length > 0) {
                 document.getElementById('invalidSection').classList.remove('hidden');
-                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 30).map((pr, idx) => `
+                document.getElementById('invalidPRList').innerHTML = invalidPR.slice(0, 30).map((pr, idx) => {
+                    // 각 필드 유효/누락 체크
+                    const checkField = (field) => pr[field] ? '✅' : '❌';
+                    return `
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="px-3 py-2">⚠️ ${pr['구매요청'] || '-'}</td>
-                        <td class="px-3 py-2">${pr['자재번호'] || '-'}</td>
-                        <td class="px-3 py-2 text-red-600">${pr['누락항목'] || '-'}</td>
-                        <td class="px-3 py-2">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
-                        <td class="px-3 py-2">
+                        <td class="px-2 py-2 text-xs">⚠️ ${pr['구매요청'] || '-'}</td>
+                        <td class="px-2 py-2 text-center">${checkField('자재번호')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('내역')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('구매요청일')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('PR납기일')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('리드타임')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('소싱그룹')}</td>
+                        <td class="px-2 py-2 text-center">${checkField('자재그룹')}</td>
+                        <td class="px-2 py-2 text-xs">${pr['담당자'] || pr['구매요청자'] || '-'}</td>
+                        <td class="px-2 py-2 text-center">
                             <button onclick="openEmailPreview(${idx})" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200">
-                                📧 미리보기
+                                📧
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
         }
 
