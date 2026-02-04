@@ -1204,19 +1204,19 @@ async function processAgent() {
     else if (groupAvgPricePerKg[materialGroup] && unitWeight > 0) {
       const avgPricePerKg = groupAvgPricePerKg[materialGroup];
       const estimatedPrice = avgPricePerKg * qty * unitWeight;
-      row['입찰예정가'] = Math.round(estimatedPrice);
+      row['입찰예정가'] = Math.ceil(estimatedPrice); // 올림 처리
       row['예정가_산정방법'] = '그룹 평균';
-      row['최근발주단가'] = Math.round(estimatedPrice); // 총액 기준 (입찰예정가와 동일)
+      row['최근발주단가'] = Math.ceil(estimatedPrice); // 총액 기준 (입찰예정가와 동일, 올림)
       row['그룹평균단가_원KG'] = avgPricePerKg; // 디버깅용
       row['산정그룹'] = materialGroup;
     }
     // 그룹 평균 - 단중이 없는 경우: 수량 기준으로 대체
     else if (groupAvgPricePerKg[materialGroup]) {
       const avgPricePerKg = groupAvgPricePerKg[materialGroup];
-      const estimatedPrice = Math.round(avgPricePerKg * qty);
+      const estimatedPrice = Math.ceil(avgPricePerKg * qty); // 올림 처리
       row['입찰예정가'] = estimatedPrice;
       row['예정가_산정방법'] = '그룹 평균';
-      row['최근발주단가'] = estimatedPrice; // 총액 기준
+      row['최근발주단가'] = estimatedPrice; // 총액 기준 (올림)
       row['그룹평균단가_원KG'] = avgPricePerKg;
       row['산정그룹'] = materialGroup;
     }

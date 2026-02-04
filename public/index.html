@@ -770,13 +770,38 @@
                     <button onclick="goToStep(7)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
                         ← 이전
                     </button>
-                    <button onclick="goToStep(1)" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
-                        처음으로
+                    <button onclick="issuePurchaseOrders()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+                        📋 PO 발행
                     </button>
                 </div>
             </div>
 
         </main>
+    </div>
+
+    <!-- PO 발행 결과 Modal -->
+    <div id="poIssueModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">PO 발행 완료</h3>
+                <div id="poIssueContent" class="text-gray-600 mb-6">
+                    <!-- 발행 결과가 여기에 표시됩니다 -->
+                </div>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="closePoIssueModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        닫기
+                    </button>
+                    <button onclick="closePoIssueModal(); goToStep(1);" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        처음으로
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- HITL Review Modal -->
@@ -1905,6 +1930,81 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+        // ============================================
+        // PO 발행 기능
+        // ============================================
+        function issuePurchaseOrders() {
+            if (!quotationData || quotationData.length === 0) {
+                alert('발행할 PO 데이터가 없습니다.');
+                return;
+            }
+            
+            // 발행 대상: 승인완료 또는 자동완료 상태인 항목
+            const issuableItems = quotationData.filter(pr => 
+                pr['처리상태'] === '자동완료' || pr['승인상태'] === '승인완료'
+            );
+            
+            // 발행 대상이 없으면 전체 건수로 표시 (PoC용)
+            const totalCount = issuableItems.length > 0 ? issuableItems.length : quotationData.length;
+            
+            // 경쟁력별 집계
+            let excellent = 0, normal = 0, poor = 0;
+            let totalAmount = 0;
+            
+            quotationData.forEach(pr => {
+                const quoteStatus = mockQuoteStatus[pr['구매요청']] || { status: 'pending', amount: 0 };
+                const quotePrice = quoteStatus.status === 'received' ? quoteStatus.amount : 
+                    Math.round((pr['입찰예정가'] || 0) * (0.85 + Math.random() * 0.2));
+                const estimatedPrice = pr['입찰예정가'] || 0;
+                const recentOrderPrice = pr['최근발주단가'] || 0;
+                
+                totalAmount += quotePrice;
+                
+                if (quotePrice <= estimatedPrice) {
+                    excellent++;
+                } else if (recentOrderPrice > 0 && quotePrice <= recentOrderPrice) {
+                    normal++;
+                } else {
+                    poor++;
+                }
+            });
+            
+            // 모달 내용 설정
+            document.getElementById('poIssueContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="text-3xl font-bold text-blue-600">${totalCount}건</p>
+                        <p class="text-sm text-blue-700">PO 발행 완료</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div class="bg-green-50 rounded p-2">
+                            <p class="font-bold text-green-600">${excellent}건</p>
+                            <p class="text-xs text-gray-600">🟢 우수</p>
+                        </div>
+                        <div class="bg-yellow-50 rounded p-2">
+                            <p class="font-bold text-yellow-600">${normal}건</p>
+                            <p class="text-xs text-gray-600">🟡 보통</p>
+                        </div>
+                        <div class="bg-red-50 rounded p-2">
+                            <p class="font-bold text-red-600">${poor}건</p>
+                            <p class="text-xs text-gray-600">🔴 열위</p>
+                        </div>
+                    </div>
+                    <div class="border-t pt-3">
+                        <p class="text-sm text-gray-600">총 발주금액</p>
+                        <p class="text-xl font-bold text-gray-800">₩${totalAmount.toLocaleString()}</p>
+                    </div>
+                </div>
+            `;
+            
+            // 모달 표시
+            document.getElementById('poIssueModal').classList.remove('hidden');
+        }
+        
+        function closePoIssueModal() {
+            document.getElementById('poIssueModal').classList.add('hidden');
         }
 
         // ============================================
