@@ -157,7 +157,7 @@ function parseLLMJson(text) {
     if (match) {
       return JSON.parse(match[1]);
     }
-    const jsonMatch = text.match(/\{[^{}]*\}/s);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
@@ -165,6 +165,239 @@ function parseLLMJson(text) {
     console.error('JSON parse error:', e);
   }
   return {};
+}
+
+// ============================================================
+// LLM 기능 구현: HITL 검토, 최종 견적 분석, 이메일 생성
+// ============================================================
+
+/**
+ * Step 7: HITL 검토 시 LLM 추천 의견 생성
+ */
+async function generateHITLRecommendation(prData) {
+  const prompt = `당신은 조선/해양 산업의 구매 전문가입니다.
+
+## HITL(Human-In-The-Loop) 검토 요청
+
+다음 구매요청(PR)에 대해 검토가 필요합니다. 전문가 의견을 제시해주세요.
+
+### PR 정보
+- 구매요청번호: ${prData['구매요청']}
+- 자재번호: ${prData['자재번호']}
+- 자재내역: ${prData['내역']}
+- 요청수량: ${prData['요청수량']} ${prData['UOM'] || 'EA'}
+- 긴급도: ${prData['긴급도']} (${prData['긴급도_신호'] || ''})
+- 계약방식: ${prData['계약방식']}
+
+### 가격 정보
+- 입찰예정가: ${(prData['입찰예정가'] || 0).toLocaleString()}원
+- 견적금액: ${Math.round(prData['Mock_견적금액'] || 0).toLocaleString()}원
+- 최근발주단가: ${(prData['최근발주단가'] || 0).toLocaleString()}원
+- 단가변동률: ${(prData['단가변동률'] || 0).toFixed(1)}%
+- 견적경쟁력: ${prData['견적경쟁력']} ${prData['견적경쟁력_신호'] || ''}
+
+### 검토 사유
+- ${prData['계약방식'] === '수의계약' ? `수의계약 적정성: ${prData['수의계약_적정성']}` : `최저가 적정성: ${prData['최저가_적정성']}`}
+
+### 요청
+이 PR에 대한 검토 의견과 추천 조치를 JSON 형식으로 제시해주세요.
+
+\`\`\`json
+{
+  "추천결정": "승인" 또는 "반려" 또는 "협상요청",
+  "검토의견": "상세한 검토 의견 (2-3문장)",
+  "주요근거": ["근거1", "근거2"],
+  "위험요소": "있다면 위험 요소 설명",
+  "추가조치": "필요한 추가 조치 (없으면 null)"
+}
+\`\`\``;
+
+  const response = await callLLM(prompt);
+  const result = parseLLMJson(response);
+  
+  // 로그 기록
+  globalState.llmLogs.push({
+    type: 'HITL_REVIEW',
+    timestamp: new Date().toISOString(),
+    pr: prData['구매요청'],
+    material: prData['자재번호'],
+    result
+  });
+  
+  return result;
+}
+
+/**
+ * Step 8: 최종 견적 비교 LLM 분석
+ */
+async function generateQuotationAnalysis(quotationData) {
+  // 주요 통계 계산
+  const totalItems = quotationData.length;
+  const totalAmount = quotationData.reduce((sum, r) => sum + (r['Mock_견적금액'] || 0), 0);
+  const avgCompetitiveness = {
+    excellent: quotationData.filter(r => r['견적경쟁력'] === '우수').length,
+    normal: quotationData.filter(r => r['견적경쟁력'] === '보통').length,
+    poor: quotationData.filter(r => r['견적경쟁력'] === '열위').length
+  };
+  const urgencyDist = {
+    urgent: quotationData.filter(r => r['긴급도'] === '긴급').length,
+    normal: quotationData.filter(r => r['긴급도'] === '일반').length,
+    flexible: quotationData.filter(r => r['긴급도'] === '여유').length
+  };
+  
+  // 상위 5건 고가 품목
+  const topExpensive = [...quotationData]
+    .sort((a, b) => (b['Mock_견적금액'] || 0) - (a['Mock_견적금액'] || 0))
+    .slice(0, 5)
+    .map(r => ({
+      pr: r['구매요청'],
+      material: r['내역']?.substring(0, 30),
+      amount: Math.round(r['Mock_견적금액'] || 0)
+    }));
+  
+  // 검토 필요 항목
+  const needReview = quotationData.filter(r => r['HITL필요']).length;
+  
+  const prompt = `당신은 조선/해양 산업의 구매 분석 전문가입니다.
+
+## 견적 비교 분석 요청
+
+이번 견적 라운드의 전체 결과를 분석해주세요.
+
+### 전체 현황
+- 총 견적 건수: ${totalItems}건
+- 총 견적 금액: ${Math.round(totalAmount).toLocaleString()}원
+
+### 견적 경쟁력 분포
+- 우수 (예정가 이하): ${avgCompetitiveness.excellent}건
+- 보통: ${avgCompetitiveness.normal}건
+- 열위 (예정가 초과): ${avgCompetitiveness.poor}건
+
+### 긴급도 분포
+- 긴급: ${urgencyDist.urgent}건
+- 일반: ${urgencyDist.normal}건
+- 여유: ${urgencyDist.flexible}건
+
+### 검토 필요 항목
+- HITL 검토 필요: ${needReview}건
+
+### 상위 5건 고가 품목
+${topExpensive.map((item, i) => `${i+1}. ${item.pr}: ${item.material}... - ${item.amount.toLocaleString()}원`).join('\n')}
+
+### 요청
+이 견적 결과에 대한 종합 분석과 추천 사항을 JSON 형식으로 제시해주세요.
+
+\`\`\`json
+{
+  "종합평가": "전체적인 평가 (1-2문장)",
+  "경쟁력분석": "견적 경쟁력에 대한 분석",
+  "위험항목": ["주의가 필요한 항목들"],
+  "비용절감기회": "비용 절감 가능한 부분",
+  "추천사항": ["추천 조치 1", "추천 조치 2", "추천 조치 3"],
+  "다음단계": "다음으로 진행해야 할 단계"
+}
+\`\`\``;
+
+  const response = await callLLM(prompt);
+  const result = parseLLMJson(response);
+  
+  // 로그 기록
+  globalState.llmLogs.push({
+    type: 'QUOTATION_ANALYSIS',
+    timestamp: new Date().toISOString(),
+    totalItems,
+    totalAmount: Math.round(totalAmount),
+    result
+  });
+  
+  return {
+    statistics: {
+      totalItems,
+      totalAmount: Math.round(totalAmount),
+      competitiveness: avgCompetitiveness,
+      urgency: urgencyDist,
+      needReview,
+      topExpensive
+    },
+    analysis: result
+  };
+}
+
+/**
+ * Step 2: 누락 PR 알림 이메일 내용 LLM 생성
+ */
+async function generateMissingPREmail(invalidPRList, recipientInfo = {}) {
+  // 누락 항목 요약
+  const missingCategories = {};
+  invalidPRList.forEach(pr => {
+    const missing = pr['누락항목'] || '기타';
+    missing.split(', ').forEach(item => {
+      missingCategories[item] = (missingCategories[item] || 0) + 1;
+    });
+  });
+  
+  // 소싱그룹별 분류
+  const bySourcingGroup = {};
+  invalidPRList.forEach(pr => {
+    const group = pr['소싱그룹명'] || pr['소싱그룹'] || '미분류';
+    if (!bySourcingGroup[group]) bySourcingGroup[group] = [];
+    bySourcingGroup[group].push(pr);
+  });
+  
+  const prompt = `당신은 조선/해양 산업의 구매 관리자입니다.
+
+## 누락 PR 알림 이메일 작성 요청
+
+다음 정보를 바탕으로 PR 데이터 누락에 대한 알림 이메일을 작성해주세요.
+
+### 누락 현황
+- 총 누락 건수: ${invalidPRList.length}건
+- 누락 항목별 분포:
+${Object.entries(missingCategories).map(([item, count]) => `  - ${item}: ${count}건`).join('\n')}
+
+### 소싱그룹별 분포
+${Object.entries(bySourcingGroup).slice(0, 5).map(([group, items]) => `  - ${group}: ${items.length}건`).join('\n')}
+
+### 샘플 누락 PR (상위 5건)
+${invalidPRList.slice(0, 5).map(pr => `- PR ${pr['구매요청']}: ${pr['자재번호']} / 누락: ${pr['누락항목']}`).join('\n')}
+
+### 요청
+공식적이고 전문적인 이메일을 작성해주세요. 다음 형식으로 응답해주세요.
+
+\`\`\`json
+{
+  "제목": "이메일 제목",
+  "본문": "이메일 본문 (HTML 형식, 줄바꿈은 <br>로)",
+  "중요도": "높음" 또는 "보통",
+  "조치기한": "권장 조치 기한",
+  "담당부서": ["관련 담당 부서 목록"]
+}
+\`\`\``;
+
+  const response = await callLLM(prompt);
+  const result = parseLLMJson(response);
+  
+  // 로그 기록
+  globalState.llmLogs.push({
+    type: 'EMAIL_GENERATION',
+    timestamp: new Date().toISOString(),
+    invalidCount: invalidPRList.length,
+    categories: missingCategories,
+    result
+  });
+  
+  // 이메일 로그에도 추가
+  if (result.제목) {
+    globalState.emailLogs.push({
+      type: 'MISSING_PR_ALERT',
+      timestamp: new Date().toISOString(),
+      subject: result.제목,
+      invalidCount: invalidPRList.length,
+      status: 'generated'
+    });
+  }
+  
+  return result;
 }
 
 // API Routes
@@ -505,6 +738,170 @@ app.get('/api/emails', (req, res) => {
 // Get LLM logs
 app.get('/api/llm-logs', (req, res) => {
   res.json(globalState.llmLogs);
+});
+
+// =============================================================================
+// LLM API Endpoints
+// =============================================================================
+
+/**
+ * HITL 검토 - LLM 추천 의견 요청
+ * POST /api/llm/hitl-review
+ */
+app.post('/api/llm/hitl-review', async (req, res) => {
+  try {
+    const { prId } = req.body;
+    
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(400).json({ 
+        error: 'LLM API key not configured',
+        fallback: {
+          추천결정: '검토필요',
+          검토의견: 'LLM API 키가 설정되지 않아 자동 추천이 불가합니다. 담당자가 직접 검토해주세요.',
+          주요근거: ['API 키 미설정'],
+          위험요소: null,
+          추가조치: '담당자 수동 검토 필요'
+        }
+      });
+    }
+    
+    if (!globalState.processingResults?.quotationData) {
+      return res.status(404).json({ error: 'No quotation data available' });
+    }
+    
+    const prData = globalState.processingResults.quotationData.find(
+      q => String(q['구매요청']) === String(prId)
+    );
+    
+    if (!prData) {
+      return res.status(404).json({ error: 'PR not found' });
+    }
+    
+    const result = await generateHITLRecommendation(prData);
+    
+    // 결과를 PR 데이터에도 저장
+    const index = globalState.processingResults.quotationData.findIndex(
+      q => String(q['구매요청']) === String(prId)
+    );
+    if (index !== -1) {
+      globalState.processingResults.quotationData[index]['LLM추천'] = result;
+    }
+    
+    res.json({
+      success: true,
+      prId,
+      recommendation: result
+    });
+  } catch (error) {
+    console.error('HITL review error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 최종 견적 비교 분석 - LLM 분석 요청
+ * POST /api/llm/quotation-analysis
+ */
+app.post('/api/llm/quotation-analysis', async (req, res) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(400).json({ 
+        error: 'LLM API key not configured',
+        fallback: {
+          statistics: {
+            totalItems: globalState.processingResults?.quotationData?.length || 0,
+            totalAmount: 0,
+            competitiveness: { excellent: 0, normal: 0, poor: 0 },
+            urgency: { urgent: 0, normal: 0, flexible: 0 },
+            needReview: 0,
+            topExpensive: []
+          },
+          analysis: {
+            종합평가: 'LLM API 키가 설정되지 않아 자동 분석이 불가합니다.',
+            경쟁력분석: '수동 분석이 필요합니다.',
+            위험항목: ['API 키 미설정'],
+            비용절감기회: '분석 불가',
+            추천사항: ['LLM API 키 설정 후 재시도'],
+            다음단계: '담당자 수동 검토'
+          }
+        }
+      });
+    }
+    
+    if (!globalState.processingResults?.quotationData) {
+      return res.status(404).json({ error: 'No quotation data available' });
+    }
+    
+    const result = await generateQuotationAnalysis(globalState.processingResults.quotationData);
+    
+    // 분석 결과 저장
+    globalState.processingResults.quotationAnalysis = result;
+    
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Quotation analysis error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * 누락 PR 알림 이메일 생성 - LLM 이메일 작성
+ * POST /api/llm/generate-email
+ */
+app.post('/api/llm/generate-email', async (req, res) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      const invalidCount = globalState.processingResults?.invalidPR?.length || 0;
+      return res.status(400).json({ 
+        error: 'LLM API key not configured',
+        fallback: {
+          제목: `[PR 데이터 누락 알림] ${invalidCount}건 확인 필요`,
+          본문: `<p>안녕하세요,</p>
+<p>PR 데이터 검증 결과 <strong>${invalidCount}건</strong>의 누락 항목이 발견되었습니다.</p>
+<p>해당 PR의 필수 정보를 보완하여 주시기 바랍니다.</p>
+<br>
+<p>감사합니다.</p>`,
+          중요도: '높음',
+          조치기한: '3영업일 이내',
+          담당부서: ['구매팀', '자재팀']
+        }
+      });
+    }
+    
+    if (!globalState.processingResults?.invalidPR) {
+      return res.status(404).json({ error: 'No invalid PR data available' });
+    }
+    
+    const result = await generateMissingPREmail(globalState.processingResults.invalidPR);
+    
+    res.json({
+      success: true,
+      email: result
+    });
+  } catch (error) {
+    console.error('Email generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * LLM 상태 확인
+ * GET /api/llm/status
+ */
+app.get('/api/llm/status', (req, res) => {
+  res.json({
+    enabled: !!process.env.ANTHROPIC_API_KEY,
+    model: CONFIG.LLM_MODEL,
+    logsCount: globalState.llmLogs.length,
+    features: {
+      hitlReview: true,
+      quotationAnalysis: true,
+      emailGeneration: true
+    }
+  });
 });
 
 // =============================================================================

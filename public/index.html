@@ -699,7 +699,20 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg font-bold">📊 최종 견적 비교</h2>
-                        <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="requestQuotationAnalysis()" class="px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                                🧠 AI 종합 분석
+                            </button>
+                            <span class="text-sm text-gray-500">* Mock 데이터 시뮬레이션</span>
+                        </div>
+                    </div>
+                    
+                    <!-- LLM Analysis Section -->
+                    <div id="llmAnalysisSection" class="hidden mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h3 class="font-medium text-purple-800 mb-3">🧠 AI 종합 분석 결과</h3>
+                        <div id="llmAnalysisContent" class="text-sm space-y-3">
+                            <!-- LLM 분석 결과가 여기에 표시됩니다 -->
+                        </div>
                     </div>
 
                     <!-- Summary -->
@@ -1889,7 +1902,7 @@
         // ============================================
         // MODALS
         // ============================================
-        function openHitlModal(prId) {
+        async function openHitlModal(prId) {
             const pr = quotationData.find(p => p['구매요청'] === prId);
             if (!pr) return;
 
@@ -1905,9 +1918,16 @@
                             <hr>
                             <div class="flex justify-between"><span>단가변동률</span><span class="font-medium ${(pr['단가변동률'] || 0) > 15 ? 'text-red-600' : ''}">${(pr['단가변동률'] || 0).toFixed(1)}%</span></div>
                         </div>
-                        <div class="mt-3 p-3 bg-purple-50 rounded text-sm">
-                            <p class="font-medium text-purple-800">🧠 AI 분석:</p>
-                            <p class="text-gray-700 mt-1">단가변동률이 허용범위(15%)를 초과하여 검토가 필요합니다.</p>
+                        <div id="llmRecommendation" class="mt-3 p-3 bg-purple-50 rounded text-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="font-medium text-purple-800">🧠 AI 추천 의견</p>
+                                <button onclick="requestLLMRecommendation('${prId}')" class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">
+                                    AI 분석 요청
+                                </button>
+                            </div>
+                            <div id="llmContent-${prId}" class="text-gray-700">
+                                ${pr['LLM추천'] ? renderLLMRecommendation(pr['LLM추천']) : '<p class="text-gray-500">AI 분석을 요청하면 추천 의견을 제공합니다.</p>'}
+                            </div>
                         </div>
                     </div>
                     <div class="border rounded-lg p-4">
@@ -1926,6 +1946,57 @@
             `;
             document.getElementById('hitlModal').classList.remove('hidden');
             document.getElementById('hitlModal').dataset.prId = prId;
+        }
+        
+        // LLM 추천 의견 렌더링
+        function renderLLMRecommendation(rec) {
+            if (!rec || !rec.추천결정) return '<p class="text-gray-500">분석 결과가 없습니다.</p>';
+            
+            const decisionColor = rec.추천결정 === '승인' ? 'text-green-700 bg-green-100' : 
+                                  rec.추천결정 === '반려' ? 'text-red-700 bg-red-100' : 'text-yellow-700 bg-yellow-100';
+            
+            return `
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium">추천:</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-medium ${decisionColor}">${rec.추천결정}</span>
+                    </div>
+                    <p><strong>의견:</strong> ${rec.검토의견 || '-'}</p>
+                    ${rec.주요근거?.length ? `<p><strong>근거:</strong> ${rec.주요근거.join(', ')}</p>` : ''}
+                    ${rec.위험요소 ? `<p class="text-red-600"><strong>⚠️ 위험:</strong> ${rec.위험요소}</p>` : ''}
+                    ${rec.추가조치 ? `<p><strong>추가조치:</strong> ${rec.추가조치}</p>` : ''}
+                </div>
+            `;
+        }
+        
+        // LLM 추천 요청
+        async function requestLLMRecommendation(prId) {
+            const contentEl = document.getElementById(`llmContent-${prId}`);
+            contentEl.innerHTML = '<p class="text-purple-600"><i class="fas fa-spinner fa-spin mr-2"></i>AI 분석 중...</p>';
+            
+            try {
+                const response = await fetch('/api/llm/hitl-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.recommendation) {
+                    // 결과 저장
+                    const pr = quotationData.find(p => p['구매요청'] === prId);
+                    if (pr) pr['LLM추천'] = data.recommendation;
+                    
+                    contentEl.innerHTML = renderLLMRecommendation(data.recommendation);
+                } else if (data.fallback) {
+                    contentEl.innerHTML = renderLLMRecommendation(data.fallback);
+                } else {
+                    contentEl.innerHTML = `<p class="text-red-500">분석 실패: ${data.error || '알 수 없는 오류'}</p>`;
+                }
+            } catch (error) {
+                contentEl.innerHTML = `<p class="text-red-500">오류: ${error.message}</p>`;
+            }
         }
 
         function closeHitlModal() {
@@ -1957,6 +2028,140 @@
                 alert('승인 실패: ' + (e.response?.data?.error || e.message));
             }
         }
+        
+        // ============================================
+        // LLM Functions for Step 8 and Email
+        // ============================================
+        
+        // Step 8: 견적 비교 종합 분석
+        async function requestQuotationAnalysis() {
+            const sectionEl = document.getElementById('llmAnalysisSection');
+            const contentEl = document.getElementById('llmAnalysisContent');
+            
+            sectionEl.classList.remove('hidden');
+            contentEl.innerHTML = '<p class="text-purple-600"><i class="fas fa-spinner fa-spin mr-2"></i>AI 종합 분석 중... (10-20초 소요)</p>';
+            
+            try {
+                const response = await fetch('/api/llm/quotation-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.analysis) {
+                    contentEl.innerHTML = renderQuotationAnalysis(data);
+                } else if (data.fallback) {
+                    contentEl.innerHTML = renderQuotationAnalysis(data.fallback);
+                } else {
+                    contentEl.innerHTML = `<p class="text-red-500">분석 실패: ${data.error || '알 수 없는 오류'}</p>`;
+                }
+            } catch (error) {
+                contentEl.innerHTML = `<p class="text-red-500">오류: ${error.message}</p>`;
+            }
+        }
+        
+        function renderQuotationAnalysis(data) {
+            const analysis = data.analysis || {};
+            const stats = data.statistics || {};
+            
+            return `
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white rounded p-3">
+                        <p class="text-xs text-gray-500 mb-1">총 견적 건수</p>
+                        <p class="text-xl font-bold">${stats.totalItems || '-'}건</p>
+                    </div>
+                    <div class="bg-white rounded p-3">
+                        <p class="text-xs text-gray-500 mb-1">총 견적 금액</p>
+                        <p class="text-xl font-bold">₩${(stats.totalAmount || 0).toLocaleString()}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-white rounded p-3">
+                        <p class="font-medium text-purple-800 mb-1">📋 종합평가</p>
+                        <p>${analysis.종합평가 || '-'}</p>
+                    </div>
+                    
+                    <div class="bg-white rounded p-3">
+                        <p class="font-medium text-purple-800 mb-1">📊 경쟁력분석</p>
+                        <p>${analysis.경쟁력분석 || '-'}</p>
+                    </div>
+                    
+                    ${analysis.위험항목?.length ? `
+                    <div class="bg-red-50 rounded p-3">
+                        <p class="font-medium text-red-800 mb-1">⚠️ 위험항목</p>
+                        <ul class="list-disc list-inside text-sm">
+                            ${analysis.위험항목.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>` : ''}
+                    
+                    <div class="bg-green-50 rounded p-3">
+                        <p class="font-medium text-green-800 mb-1">💰 비용절감기회</p>
+                        <p>${analysis.비용절감기회 || '-'}</p>
+                    </div>
+                    
+                    ${analysis.추천사항?.length ? `
+                    <div class="bg-blue-50 rounded p-3">
+                        <p class="font-medium text-blue-800 mb-1">💡 추천사항</p>
+                        <ul class="list-disc list-inside text-sm">
+                            ${analysis.추천사항.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>` : ''}
+                    
+                    <div class="bg-white rounded p-3">
+                        <p class="font-medium text-purple-800 mb-1">➡️ 다음단계</p>
+                        <p>${analysis.다음단계 || '-'}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 누락 PR 이메일 생성
+        async function generateMissingPREmail() {
+            const contentEl = document.getElementById('batchEmailContent');
+            if (!contentEl) return;
+            
+            contentEl.innerHTML = '<p class="text-center"><i class="fas fa-spinner fa-spin mr-2"></i>AI 이메일 생성 중...</p>';
+            
+            try {
+                const response = await fetch('/api/llm/generate-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                const email = data.success ? data.email : data.fallback;
+                
+                if (email) {
+                    contentEl.innerHTML = `
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-sm text-gray-600">제목</label>
+                                <input type="text" class="w-full border rounded p-2 mt-1" value="${email.제목 || ''}" readonly>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">중요도: <span class="font-medium">${email.중요도 || '보통'}</span></label>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">본문</label>
+                                <div class="border rounded p-3 mt-1 bg-gray-50 text-sm max-h-48 overflow-y-auto">${email.본문 || ''}</div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">조치기한: <span class="font-medium">${email.조치기한 || '-'}</span></label>
+                            </div>
+                            ${email.담당부서?.length ? `
+                            <div>
+                                <label class="text-sm text-gray-600">담당부서</label>
+                                <p class="mt-1">${email.담당부서.join(', ')}</p>
+                            </div>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                contentEl.innerHTML = `<p class="text-red-500">오류: ${error.message}</p>`;
+            }
+        }
 
         // Email Modals
         function openBatchEmailModal() {
@@ -1979,6 +2184,9 @@
                         ${managerList}
                     </div>
                     <p class="text-gray-600">총 <strong>${invalidPR.length}건</strong>의 누락 PR 안내 메일을 발송합니다.</p>
+                    <button onclick="generateMissingPREmail()" class="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+                        🧠 AI로 이메일 내용 생성
+                    </button>
                 </div>
             `;
             document.getElementById('batchEmailModal').classList.remove('hidden');
