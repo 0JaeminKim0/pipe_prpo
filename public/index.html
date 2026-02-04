@@ -743,9 +743,10 @@
                                     <tr>
                                         <th class="px-3 py-2 text-left">PR번호</th>
                                         <th class="px-3 py-2 text-left">선정업체</th>
-                                        <th class="px-3 py-2 text-right">견적단가</th>
-                                        <th class="px-3 py-2 text-right">예정단가</th>
                                         <th class="px-3 py-2 text-right">최근발주단가</th>
+                                        <th class="px-3 py-2 text-right">예정단가</th>
+                                        <th class="px-3 py-2 text-right">견적단가</th>
+                                        <th class="px-3 py-2 text-right">절감율</th>
                                         <th class="px-3 py-2 text-center">경쟁력</th>
                                     </tr>
                                 </thead>
@@ -1880,17 +1881,24 @@
             document.getElementById('s8_normal').textContent = normal;
             document.getElementById('s8_poor').textContent = poor;
             
-            // 테이블 렌더링
+            // 테이블 렌더링 (순서: 최근발주단가 → 예정단가 → 견적단가 → 절감율 → 경쟁력)
             document.getElementById('s8_comparisonList').innerHTML = comparisonData.slice(0, 50).map(item => {
                 const { pr, quotePrice, estimatedPrice, recentOrderPrice, competitiveness, signal, bgClass } = item;
+                
+                // 절감율 계산: (예정단가 - 견적단가) / 예정단가 * 100
+                // 양수면 절감, 음수면 초과
+                const savingsRate = estimatedPrice > 0 ? ((estimatedPrice - quotePrice) / estimatedPrice * 100) : 0;
+                const savingsClass = savingsRate >= 0 ? 'text-blue-600' : 'text-red-600';
+                const savingsSign = savingsRate >= 0 ? '▼' : '▲';
                 
                 return `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-3 py-2">${pr['구매요청'] || '-'}</td>
                         <td class="px-3 py-2">${pr['매칭업체명'] || '-'}</td>
-                        <td class="px-3 py-2 text-right font-medium">₩${quotePrice.toLocaleString()}</td>
-                        <td class="px-3 py-2 text-right">₩${estimatedPrice.toLocaleString()}</td>
                         <td class="px-3 py-2 text-right">${recentOrderPrice > 0 ? '₩' + recentOrderPrice.toLocaleString() : '-'}</td>
+                        <td class="px-3 py-2 text-right">₩${estimatedPrice.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-right font-medium">₩${quotePrice.toLocaleString()}</td>
+                        <td class="px-3 py-2 text-right font-medium ${savingsClass}">${savingsSign} ${Math.abs(savingsRate).toFixed(1)}%</td>
                         <td class="px-3 py-2 text-center">
                             <span class="px-2 py-1 rounded text-xs font-medium ${bgClass}">${signal} ${competitiveness}</span>
                         </td>
