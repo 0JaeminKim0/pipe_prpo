@@ -1146,13 +1146,13 @@ async function processAgent() {
 
   // Price estimation - 3단계 우선순위 적용
   // 1순위: 자재+내역 일치 (정확한 매칭)
-  // 2순위: 도면 유사 사양가 (향후 구현 예정, 현재 그룹 평균으로 대체)
-  // 3순위: 그룹 평균 (자재 그룹별 중량 기준 평균단가)
+  // 2순위: 도면 유사 사양가 (향후 구현 예정, 현재 자재별 그룹 단가 평균으로 대체)
+  // 3순위: 자재별 그룹 단가 평균 (자재 그룹별 중량 기준 평균단가)
   addLog('입찰 예정가 산정 중...');
   
   // 자재그룹별 중량 기준 평균단가 계산
   // 그룹키: '자재그룹' 필드 (ex: 1P0M01, 1P0K02)
-  // 공식: 그룹 평균단가(원/KG) = SUM(발주금액) / SUM(발주중량)
+  // 공식: 자재그룹 평균단가(원/KG) = SUM(발주금액) / SUM(발주중량)
   const groupPriceByWeight = {};
   poHistory.forEach(row => {
     const groupKey = row['자재그룹'] || ''; // 자재그룹 필드 사용
@@ -1199,23 +1199,23 @@ async function processAgent() {
       row['예정가_산정방법'] = '자재+내역 일치';
       row['최근발주단가'] = Math.round(unitPrice * qty); // 총액 기준 (단가 × 요청수량)
     }
-    // 2순위/3순위: 그룹 평균 (자재그룹별 중량 기준)
+    // 2순위/3순위: 자재별 그룹 단가 평균 (자재그룹별 중량 기준)
     // 입찰예정가 = 평균단가(원/KG) × 요청수량 × 단중(KG)
     else if (groupAvgPricePerKg[materialGroup] && unitWeight > 0) {
       const avgPricePerKg = groupAvgPricePerKg[materialGroup];
       const estimatedPrice = avgPricePerKg * qty * unitWeight;
       row['입찰예정가'] = Math.ceil(estimatedPrice); // 올림 처리
-      row['예정가_산정방법'] = '그룹 평균';
+      row['예정가_산정방법'] = '자재별 그룹 단가 평균';
       row['최근발주단가'] = Math.ceil(estimatedPrice); // 총액 기준 (입찰예정가와 동일, 올림)
       row['그룹평균단가_원KG'] = avgPricePerKg; // 디버깅용
       row['산정그룹'] = materialGroup;
     }
-    // 그룹 평균 - 단중이 없는 경우: 수량 기준으로 대체
+    // 자재별 그룹 단가 평균 - 단중이 없는 경우: 수량 기준으로 대체
     else if (groupAvgPricePerKg[materialGroup]) {
       const avgPricePerKg = groupAvgPricePerKg[materialGroup];
       const estimatedPrice = Math.ceil(avgPricePerKg * qty); // 올림 처리
       row['입찰예정가'] = estimatedPrice;
-      row['예정가_산정방법'] = '그룹 평균';
+      row['예정가_산정방법'] = '자재별 그룹 단가 평균';
       row['최근발주단가'] = estimatedPrice; // 총액 기준 (올림)
       row['그룹평균단가_원KG'] = avgPricePerKg;
       row['산정그룹'] = materialGroup;

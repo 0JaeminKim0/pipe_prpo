@@ -549,9 +549,9 @@
                             <p class="text-xl font-bold text-blue-600" id="s5_exact">0</p>
                             <p class="text-xs text-gray-600">자재+내역 일치</p>
                         </div>
-                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" onclick="filterPriceList('그룹 평균')" id="card_group">
+                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-green-300 transition-all" onclick="filterPriceList('자재별 그룹 단가 평균')" id="card_group">
                             <p class="text-xl font-bold text-green-600" id="s5_group">0</p>
-                            <p class="text-xs text-gray-600">그룹 평균</p>
+                            <p class="text-xs text-gray-600">자재별 그룹 단가 평균</p>
                         </div>
                         <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('도면 유사')" id="card_llm">
                             <p class="text-xl font-bold text-purple-600" id="s5_llm">0</p>
@@ -1636,7 +1636,7 @@
             const priceMethods = processingResults.summary.priceMethodSummary || {};
             
             const exact = priceMethods['자재+내역 일치'] || 0;
-            const group = priceMethods['그룹 평균'] || 0;
+            const group = priceMethods['자재별 그룹 단가 평균'] || 0;
             const llm = priceMethods['LLM 산정'] || 0;
             const def = priceMethods['기본값'] || 0;
             
@@ -1669,10 +1669,10 @@
                 filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '자재+내역 일치');
                 document.getElementById('card_exact')?.classList.add('ring-2', 'ring-blue-500');
                 filterLabel = '(자재+내역 일치)';
-            } else if (filterType === '그룹 평균') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '그룹 평균');
+            } else if (filterType === '자재별 그룹 단가 평균') {
+                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '자재별 그룹 단가 평균');
                 document.getElementById('card_group')?.classList.add('ring-2', 'ring-green-500');
-                filterLabel = '(그룹 평균)';
+                filterLabel = '(자재별 그룹 단가 평균)';
             } else if (filterType === '도면 유사') {
                 // 향후 구현 예정 - 현재는 사용하지 않음
                 filtered = [];
@@ -1708,7 +1708,7 @@
                     <td class="px-2 py-2">
                         <span class="px-1 py-0.5 rounded text-xs ${
                             pr['예정가_산정방법'] === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
-                            pr['예정가_산정방법'] === '그룹 평균' ? 'bg-green-100 text-green-800' :
+                            pr['예정가_산정방법'] === '자재별 그룹 단가 평균' ? 'bg-green-100 text-green-800' :
                             'bg-orange-100 text-orange-800'
                         }">${pr['예정가_산정방법'] || '-'}</span>
                     </td>
