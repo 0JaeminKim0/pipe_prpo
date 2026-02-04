@@ -553,9 +553,10 @@
                             <p class="text-xl font-bold text-green-600" id="s5_group">0</p>
                             <p class="text-xs text-gray-600">그룹 평균</p>
                         </div>
-                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('LLM 산정')" id="card_llm">
+                        <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('도면 유사')" id="card_llm">
                             <p class="text-xl font-bold text-purple-600" id="s5_llm">0</p>
-                            <p class="text-xs text-gray-600">LLM 산정</p>
+                            <p class="text-xs text-gray-600">도면 유사 사양가</p>
+                            <p class="text-[10px] text-gray-400">향후 구현 예정</p>
                         </div>
                         <div class="mini-card border-l-4 border-orange-500 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all" onclick="filterPriceList('기본값')" id="card_default">
                             <p class="text-xl font-bold text-orange-600" id="s5_default">0</p>
@@ -577,6 +578,7 @@
                                     <th class="px-2 py-2 text-left">자재번호</th>
                                     <th class="px-2 py-2 text-left">자재내역</th>
                                     <th class="px-2 py-2 text-left">산정방법</th>
+                                    <th class="px-2 py-2 text-right">최근발주가</th>
                                     <th class="px-2 py-2 text-right">입찰예정가</th>
                                     <th class="px-2 py-2 text-center">가격조정</th>
                                 </tr>
@@ -1609,10 +1611,11 @@
                 filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '그룹 평균');
                 document.getElementById('card_group')?.classList.add('ring-2', 'ring-green-500');
                 filterLabel = '(그룹 평균)';
-            } else if (filterType === 'LLM 산정') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === 'LLM 산정');
+            } else if (filterType === '도면 유사') {
+                // 향후 구현 예정 - 현재는 사용하지 않음
+                filtered = [];
                 document.getElementById('card_llm')?.classList.add('ring-2', 'ring-purple-500');
-                filterLabel = '(LLM 산정)';
+                filterLabel = '(도면 유사 사양가 - 준비중)';
             } else if (filterType === '기본값') {
                 filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '기본값');
                 document.getElementById('card_default')?.classList.add('ring-2', 'ring-orange-500');
@@ -1634,21 +1637,24 @@
             
             document.getElementById('s5_priceList').innerHTML = filtered.map((pr, idx) => {
                 const originalIdx = quotationData.indexOf(pr);
+                const recentPrice = pr['최근발주단가'] || 0;
                 return `
                 <tr class="border-b hover:bg-gray-50 ${pr['예정가_산정방법'] === '기본값' ? 'bg-orange-50' : ''}" id="price-row-${originalIdx}">
-                    <td class="px-2 py-2 text-xs">${pr['예정가_산정방법'] === 'LLM 산정' ? '🧠' : pr['예정가_산정방법'] === '기본값' ? '⚠️' : '✅'} ${pr['구매요청'] || '-'}</td>
+                    <td class="px-2 py-2 text-xs">${pr['예정가_산정방법'] === '기본값' ? '⚠️' : '✅'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2">
                         <span class="px-1 py-0.5 rounded text-xs ${
                             pr['예정가_산정방법'] === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
                             pr['예정가_산정방법'] === '그룹 평균' ? 'bg-green-100 text-green-800' :
-                            pr['예정가_산정방법'] === 'LLM 산정' ? 'bg-purple-100 text-purple-800' :
                             'bg-orange-100 text-orange-800'
                         }">${pr['예정가_산정방법'] || '-'}</span>
                     </td>
+                    <td class="px-2 py-2 text-right text-xs text-gray-600">
+                        ${recentPrice > 0 ? '₩' + recentPrice.toLocaleString() : '-'}
+                    </td>
                     <td class="px-2 py-2 text-right text-xs">
-                        <span id="price-value-${originalIdx}">₩${(pr['입찰예정가'] || 0).toLocaleString()}</span>
+                        <span id="price-value-${originalIdx}" class="font-semibold">₩${(pr['입찰예정가'] || 0).toLocaleString()}</span>
                         <span id="price-adjust-${originalIdx}" class="text-xs text-gray-500 ml-1"></span>
                     </td>
                     <td class="px-2 py-2 text-center">

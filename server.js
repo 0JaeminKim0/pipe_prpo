@@ -747,29 +747,46 @@ async function processAgent() {
     row['기술평가대상'] = vendorCode.startsWith('2') ? 'Y' : 'N';
   });
 
-  // Price estimation
+  // Price estimation - 3단계 우선순위 적용
+  // 1순위: 자재+내역 일치 (정확한 매칭)
+  // 2순위: 도면 유사 사양가 (향후 구현 예정, 현재 그룹 평균으로 대체)
+  // 3순위: 그룹 평균 (자재 그룹별 중량 기준 평균단가)
   addLog('입찰 예정가 산정 중...');
-  const poUnitPrices = {};
+  
+  // 그룹별 중량 기준 평균단가 계산
+  // 공식: 그룹 평균단가(원/KG) = SUM(발주금액) / SUM(발주중량)
+  const groupPriceByWeight = {};
   poHistory.forEach(row => {
     const key = row['자재번호_키'];
-    const qty = parseFloat(row['발주수량']) || 1;
     const amount = parseFloat(row['발주금액(KRW)-변환']) || 0;
-    if (!poUnitPrices[key]) {
-      poUnitPrices[key] = [];
+    const weight = parseFloat(row['발주중량(KG)']) || 0;
+    
+    if (!groupPriceByWeight[key]) {
+      groupPriceByWeight[key] = { totalAmount: 0, totalWeight: 0 };
     }
-    poUnitPrices[key].push(amount / qty);
+    groupPriceByWeight[key].totalAmount += amount;
+    groupPriceByWeight[key].totalWeight += weight;
+  });
+  
+  // 그룹별 평균단가(원/KG) 계산
+  const groupAvgPricePerKg = {};
+  Object.entries(groupPriceByWeight).forEach(([key, data]) => {
+    if (data.totalWeight > 0) {
+      groupAvgPricePerKg[key] = data.totalAmount / data.totalWeight; // 원/KG
+    }
   });
 
-  let llmCallCount = 0;
   for (const row of quotationData) {
     const key = row['자재번호_키'];
     const desc = String(row['내역'] || '').trim().toUpperCase();
     const qty = parseFloat(row['요청수량']) || 1;
+    const unitWeight = parseFloat(row['단중(kg)']) || 0; // PR의 단중(kg) 필드
     
     // Find matching price
     const matchKey = `${key}_${desc}`;
     const exactMatch = poLookup[matchKey];
     
+    // 1순위: 자재+내역 일치
     if (exactMatch) {
       const matchQty = parseFloat(exactMatch['발주수량']) || 1;
       const matchAmount = parseFloat(exactMatch['발주금액(KRW)-변환']) || 0;
@@ -777,38 +794,31 @@ async function processAgent() {
       row['입찰예정가'] = Math.round(unitPrice * qty);
       row['예정가_산정방법'] = '자재+내역 일치';
       row['최근발주단가'] = unitPrice;
-    } else if (poUnitPrices[key] && poUnitPrices[key].length > 0) {
-      const avgPrice = poUnitPrices[key].reduce((a, b) => a + b, 0) / poUnitPrices[key].length;
-      row['입찰예정가'] = Math.round(avgPrice * qty);
+    }
+    // 2순위/3순위: 그룹 평균 (중량 기준)
+    // 입찰예정가 = 평균단가(원/KG) × 요청수량 × 단중(KG)
+    else if (groupAvgPricePerKg[key] && unitWeight > 0) {
+      const avgPricePerKg = groupAvgPricePerKg[key];
+      const estimatedPrice = avgPricePerKg * qty * unitWeight;
+      row['입찰예정가'] = Math.round(estimatedPrice);
       row['예정가_산정방법'] = '그룹 평균';
-      row['최근발주단가'] = avgPrice;
-    } else {
-      // Try LLM for new materials
-      if (process.env.ANTHROPIC_API_KEY && llmCallCount < 10) {
-        addLog(`🧠 LLM 호출: ${row['자재번호']} 예정가 산정...`);
-        const prompt = generatePriceEstimationPrompt(row, poHistory);
-        const response = await callLLM(prompt);
-        const result = parseLLMJson(response);
-        
-        if (result && result['예정단가']) {
-          row['입찰예정가'] = Math.round(parseFloat(result['예정단가']) * qty);
-          row['예정가_산정방법'] = 'LLM 산정';
-          row['LLM응답'] = result;
-          globalState.llmLogs.push({
-            step: 'S12',
-            pr: row['구매요청'],
-            material: row['자재번호'],
-            result
-          });
-          llmCallCount++;
-        } else {
-          row['입찰예정가'] = 1000000;
-          row['예정가_산정방법'] = '기본값';
-        }
-      } else {
-        row['입찰예정가'] = 1000000;
-        row['예정가_산정방법'] = '기본값';
-      }
+      row['최근발주단가'] = avgPricePerKg * unitWeight; // 단위당 가격 (단가)
+      row['그룹평균단가_원KG'] = avgPricePerKg; // 디버깅용
+    }
+    // 그룹 평균 불가능 (PO 실적 없음 또는 단중 없음)
+    else if (groupAvgPricePerKg[key]) {
+      // 단중이 없는 경우: 수량 기준으로 대체
+      const avgPricePerKg = groupAvgPricePerKg[key];
+      row['입찰예정가'] = Math.round(avgPricePerKg * qty);
+      row['예정가_산정방법'] = '그룹 평균';
+      row['최근발주단가'] = avgPricePerKg;
+      row['그룹평균단가_원KG'] = avgPricePerKg;
+    }
+    // 기본값: 해당 그룹 PO 실적 없음
+    else {
+      row['입찰예정가'] = 1000000;
+      row['예정가_산정방법'] = '기본값';
+      row['최근발주단가'] = 0;
     }
   }
 
