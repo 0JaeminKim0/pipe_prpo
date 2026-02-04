@@ -1197,7 +1197,7 @@ async function processAgent() {
       const unitPrice = matchAmount / matchQty;
       row['입찰예정가'] = Math.round(unitPrice * qty);
       row['예정가_산정방법'] = '자재+내역 일치';
-      row['최근발주단가'] = unitPrice;
+      row['최근발주단가'] = Math.round(unitPrice * qty); // 총액 기준 (단가 × 요청수량)
     }
     // 2순위/3순위: 그룹 평균 (자재그룹별 중량 기준)
     // 입찰예정가 = 평균단가(원/KG) × 요청수량 × 단중(KG)
@@ -1206,16 +1206,17 @@ async function processAgent() {
       const estimatedPrice = avgPricePerKg * qty * unitWeight;
       row['입찰예정가'] = Math.round(estimatedPrice);
       row['예정가_산정방법'] = '그룹 평균';
-      row['최근발주단가'] = avgPricePerKg * unitWeight; // 단위당 가격 (단가)
+      row['최근발주단가'] = Math.round(estimatedPrice); // 총액 기준 (입찰예정가와 동일)
       row['그룹평균단가_원KG'] = avgPricePerKg; // 디버깅용
       row['산정그룹'] = materialGroup;
     }
     // 그룹 평균 - 단중이 없는 경우: 수량 기준으로 대체
     else if (groupAvgPricePerKg[materialGroup]) {
       const avgPricePerKg = groupAvgPricePerKg[materialGroup];
-      row['입찰예정가'] = Math.round(avgPricePerKg * qty);
+      const estimatedPrice = Math.round(avgPricePerKg * qty);
+      row['입찰예정가'] = estimatedPrice;
       row['예정가_산정방법'] = '그룹 평균';
-      row['최근발주단가'] = avgPricePerKg;
+      row['최근발주단가'] = estimatedPrice; // 총액 기준
       row['그룹평균단가_원KG'] = avgPricePerKg;
       row['산정그룹'] = materialGroup;
     }
