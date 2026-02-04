@@ -432,13 +432,13 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="font-bold mb-4">📝 발주 방식 검토 <span id="s3_methodFilter" class="text-sm font-normal text-blue-600 ml-2"></span></h3>
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterMethodList('수의계약')" id="card_direct">
+                            <div class="mini-card cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all" onclick="filterMethodList('배량 후 발주')" id="card_direct">
                                 <p class="text-xl font-bold text-blue-600" id="s3_direct">0</p>
-                                <p class="text-xs text-gray-600">수의계약</p>
+                                <p class="text-xs text-gray-600">배량 후 발주</p>
                             </div>
-                            <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterMethodList('지명경쟁')" id="card_bidding">
+                            <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterMethodList('입찰(견적)진행')" id="card_bidding">
                                 <p class="text-xl font-bold text-purple-600" id="s3_bidding">0</p>
-                                <p class="text-xs text-gray-600">지명경쟁</p>
+                                <p class="text-xs text-gray-600">입찰(견적)진행</p>
                             </div>
                         </div>
                         <div class="flex justify-between items-center mb-2">
@@ -1238,13 +1238,15 @@
         function populateStep3() {
             if (!processingResults) return;
             
-            // Step 3는 전체 PR 데이터 사용 (PZAF 필터링 전)
-            const data = allPRData.length > 0 ? allPRData : quotationData;
+            // Step 3: 업체 검토는 전체 PR, 발주방식은 PZAF(336건)만
+            const allData = allPRData.length > 0 ? allPRData : quotationData;
+            const pzafData = quotationData; // PZAF 대상 336건
             
-            const matched = data.filter(pr => pr['업체매칭여부']).length;
-            const unmatched = data.length - matched;
-            const direct = data.filter(pr => pr['계약방식'] === '수의계약').length;
-            const bidding = data.filter(pr => pr['계약방식'] === '지명경쟁').length;
+            const matched = allData.filter(pr => pr['업체매칭여부']).length;
+            const unmatched = allData.length - matched;
+            // 발주방식은 PZAF 데이터만 사용 (견적대상 336건)
+            const direct = pzafData.filter(pr => pr['계약분류'] === '표준단가').length;
+            const bidding = pzafData.filter(pr => pr['계약분류'] !== '표준단가').length;
             
             document.getElementById('s3_matched').textContent = matched.toLocaleString();
             document.getElementById('s3_unmatched').textContent = unmatched.toLocaleString();
@@ -1316,8 +1318,8 @@
         function filterMethodList(filterType) {
             s3MethodFilter = filterType;
             
-            // Step 3는 전체 PR 데이터 사용
-            const data = allPRData.length > 0 ? allPRData : quotationData;
+            // 발주방식은 PZAF 대상(336건)만 사용
+            const data = quotationData;
             
             // Update card selection styles
             ['card_direct', 'card_bidding'].forEach(id => {
@@ -1327,14 +1329,14 @@
             let filtered = [...data];
             let filterLabel = '';
             
-            if (filterType === '수의계약') {
-                filtered = data.filter(pr => pr['계약방식'] === '수의계약');
+            if (filterType === '배량 후 발주') {
+                filtered = data.filter(pr => pr['계약분류'] === '표준단가');
                 document.getElementById('card_direct')?.classList.add('ring-2', 'ring-blue-500');
-                filterLabel = '(수의계약)';
-            } else if (filterType === '지명경쟁') {
-                filtered = data.filter(pr => pr['계약방식'] === '지명경쟁');
+                filterLabel = '(배량 후 발주)';
+            } else if (filterType === '입찰(견적)진행') {
+                filtered = data.filter(pr => pr['계약분류'] !== '표준단가');
                 document.getElementById('card_bidding')?.classList.add('ring-2', 'ring-purple-500');
-                filterLabel = '(지명경쟁)';
+                filterLabel = '(입찰(견적)진행)';
             }
             
             document.getElementById('s3_methodFilter').textContent = filterLabel;
@@ -1346,9 +1348,9 @@
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2">
-                        <span class="text-xs ${pr['계약방식'] === '수의계약' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약방식'] || '-'}</span>
+                        <span class="text-xs ${pr['계약분류'] === '표준단가' ? 'text-blue-600' : 'text-purple-600'}">${pr['계약분류'] === '표준단가' ? '배량 후 발주' : '입찰(견적)진행'}</span>
                     </td>
-                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['계약방식_선정사유'] || ''}">${(pr['계약방식_선정사유'] || '-').substring(0, 10)}${(pr['계약방식_선정사유']?.length > 10) ? '...' : ''}</td>
+                    <td class="px-2 py-2 text-xs truncate max-w-[80px]" title="${pr['계약분류'] === '표준단가' ? '표준단가' : '비표준계약 및 계약외'}">${pr['계약분류'] === '표준단가' ? '표준단가' : '비표준계약 및 계약외'}</td>
                 </tr>
             `).join('');
         }
