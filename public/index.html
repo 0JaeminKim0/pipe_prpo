@@ -1587,15 +1587,6 @@
                         </div>
                     </div>
 
-                    <!-- AI 판단 -->
-                    <div class="bg-purple-50 border border-purple-200 rounded p-3">
-                        <h4 class="font-medium text-purple-800 text-xs mb-2">🧠 AI 판단</h4>
-                        <div class="space-y-1 text-xs">
-                            <p><strong>예정가 산정:</strong> ${pr['예정가_산정방법'] || '-'}</p>
-                            ${pr['HITL필요'] ? '<p class="text-orange-600"><i class="fas fa-exclamation-triangle mr-1"></i>담당자 검토 필요</p>' : ''}
-                        </div>
-                    </div>
-
                     <!-- Actions -->
                     <div class="flex justify-end space-x-2 pt-3 border-t">
                         ${pr['HITL필요'] ? `
