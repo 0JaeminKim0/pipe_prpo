@@ -2385,19 +2385,6 @@
                         <p class="font-medium text-green-800 mb-1">💰 비용절감기회</p>
                         <p>${analysis.비용절감기회 || '-'}</p>
                     </div>
-                    
-                    ${analysis.추천사항?.length ? `
-                    <div class="bg-blue-50 rounded p-3">
-                        <p class="font-medium text-blue-800 mb-1">💡 추천사항</p>
-                        <ul class="list-disc list-inside text-sm">
-                            ${analysis.추천사항.map(item => `<li>${item}</li>`).join('')}
-                        </ul>
-                    </div>` : ''}
-                    
-                    <div class="bg-white rounded p-3">
-                        <p class="font-medium text-purple-800 mb-1">➡️ 다음단계</p>
-                        <p>${analysis.다음단계 || '-'}</p>
-                    </div>
                 </div>
             `;
         }
