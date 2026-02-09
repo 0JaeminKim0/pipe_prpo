@@ -1,0 +1,376 @@
+{
+  "drawings": [
+    {
+      "page": 1,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 3\"(80A)-B",
+        "size_specification": "3\"(80A)",
+        "drawing_number": "2585DAB500114-AOB-ANC-J1",
+        "filename": "2585DAB500114-AOB-ANC-J1",
+        "stock_number": "PZAFCS08992",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QB -TYPE",
+        "system": "LNG STRIPPING LINE(CS)",
+        "insulation_thick": "50mm",
+        "diameter": "3\"(80A)",
+        "yucheom": "QB50Z-3"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "16.6 KG/EA"
+      },
+      "image_path": "image/PZAFCS08992.png"
+    },
+    {
+      "page": 2,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 3\"(80A)",
+        "size_specification": "3\"(80A)",
+        "drawing_number": "2585CAB500114-AOB-ANC-JH",
+        "filename": "2585CAB500114-AOB-ANC-JH",
+        "stock_number": "PZAFCS0E992",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QE -TYPE",
+        "system": "VAPOUR(LCG)",
+        "insulation_thick": "mm",
+        "diameter": "3\"(80A)",
+        "yucheom": "QE50Z-3"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "10.6 KG/EA"
+      },
+      "image_path": "image/PZAFCS0E992.png"
+    },
+    {
+      "page": 3,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 150A (6')",
+        "size_specification": "150A (6')",
+        "drawing_number": "2585DA850D114-AOB-ANC-J1",
+        "filename": "2585DA850D114-AOB-ANC-J1",
+        "stock_number": "PZAFDWL6CC2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "A-TYPE",
+        "system": "VAPOUR & LIQUID SYSTEM(CG)",
+        "insulation_thick": null,
+        "diameter": "6\" (150A)",
+        "yucheom": "VL-6"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "16.5 KG/EA"
+      },
+      "image_path": "image/PZAFDWL6CC2.png"
+    },
+    {
+      "page": 4,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "REINFORCED PLATE WITH STOPPER 1.1/2\"(40A)-A",
+        "size_specification": "1.1/2\"(40A)-A",
+        "drawing_number": "25850A650014-AOB-ANC-J1",
+        "filename": "25850A650014-AOB-ANC-J1",
+        "stock_number": "PZAF0A50662",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QA -TYPE",
+        "system": "LNG STRIPPING LINE(CS)",
+        "insulation_thick": "50mm",
+        "diameter": "40A(1.1/2\")",
+        "yucheom": "QA50-40"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "20.6 KG/EA"
+      },
+      "image_path": "image/PZAF0A50662.png"
+    },
+    {
+      "page": 5,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "REINFORCED PLATE WITH STOPPER 6\"(150A)-B",
+        "size_specification": "6\"(150A)-B",
+        "drawing_number": "2585DA650114-AOB-ANC-J1",
+        "filename": "2585DA650114-AOB-ANC-J1",
+        "stock_number": "PZAFQB300C2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QB -TYPE",
+        "system": "FUEL GAS LINE(CG)",
+        "insulation_thick": "30mm",
+        "diameter": null,
+        "yucheom": "QB30-06"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "15.6 KG/EA"
+      },
+      "image_path": "image/PZAFQB300C2.png"
+    },
+    {
+      "page": 6,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 20\" (500A)",
+        "size_specification": "20\" (500A)",
+        "drawing_number": "2585DA6500114-AOB-ANC-J11",
+        "filename": "2585DA6500114-AOB-ANC-J11",
+        "stock_number": "PZAFQB500S2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QB",
+        "system": "VAPOUR SYSTEM(CG)",
+        "insulation_thick": "80mm",
+        "diameter": "500A(20\")",
+        "yucheom": "QB-500S"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "36.5 KG/EA"
+      },
+      "image_path": "image/PZAFQB500S2.png"
+    },
+    {
+      "page": 7,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "REINFORCED PLATE WITH STOPPER 2\"(50A)-B",
+        "size_specification": "2\"(50A)",
+        "drawing_number": "QB50S-02",
+        "filename": "2585QAB500114-AOB-ANC-JH",
+        "stock_number": "P2AFQB5S772",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QB -TYPE",
+        "system": "LNG STRIPPING LINE(CS)",
+        "insulation_thick": "50mm",
+        "diameter": "2\"(50A)",
+        "yucheom": "QB50S-02"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "12 KG/EA"
+      },
+      "image_path": "image/P2AFQB5S772.png"
+    },
+    {
+      "page": 8,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "REINFORCED PLATE WITH STOPPER 2\"(50A)-C",
+        "size_specification": "2\"(50A)",
+        "drawing_number": "2585CAB500114-AOB-ANC-JH",
+        "filename": "2585CAB500114-AOB-ANC-JH",
+        "stock_number": "P2AF0C30772",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QC -TYPE",
+        "system": "VAPOUR(CG)",
+        "insulation_thick": "40mm",
+        "diameter": "2\"(50A)",
+        "yucheom": "QC30-02"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "15.6 KG/EA"
+      },
+      "image_path": "image/P2AF0C30772.png"
+    },
+    {
+      "page": 9,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "ANCHOR SUPPORT DETAIL 4\" (100A)",
+        "size_specification": "4\"(100A)",
+        "drawing_number": "2585DA6500114-AOB-ANC-J1",
+        "filename": "2585DA6500114-AOB-ANC-J1",
+        "stock_number": "PZAFRFA0AA2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "D",
+        "system": "FUEL GAS (OG)",
+        "insulation_thick": null,
+        "diameter": "4\"(100A)",
+        "yucheom": "RFA-004"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "12.0 KG/EA"
+      },
+      "image_path": "image/PZAFRFA0AA2.png"
+    },
+    {
+      "page": 10,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 3\" (80A)",
+        "size_specification": "3\" (80A)",
+        "drawing_number": "RFB-003",
+        "filename": "2585DA650DT14-AOB-ANC-JH",
+        "stock_number": "PZAFRFB0992",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "RFB",
+        "system": "VAPOUR(CG)",
+        "insulation_thick": null,
+        "diameter": "3\"(80A)",
+        "yucheom": "RFB-003"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "4.5 KG/EA"
+      },
+      "image_path": "image/PZAFRFB0992.png"
+    },
+    {
+      "page": 11,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 4\" (100A)",
+        "size_specification": "4\" (100A)",
+        "drawing_number": "2585DA8500114-AOB-ANC-JH",
+        "filename": "2585DA8500114-AOB-ANC-JH",
+        "stock_number": "PZAFRLA00A2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "RLA",
+        "system": "FUEL GAS(CG)",
+        "insulation_thick": "30mm",
+        "diameter": "4\" (100A)",
+        "yucheom": "RLA-004"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "8.6 KG/EA"
+      },
+      "image_path": "image/PZAFRLA00A2.png"
+    },
+    {
+      "page": 12,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LNG REINFORCED PLATE WITH STOPPER",
+        "size_specification": "M800 L [ANG] 16 ( 400) 28 ( 650)",
+        "drawing_number": "M800-26-28",
+        "filename": "DZHS-NM2",
+        "stock_number": null,
+        "project_number": "P/O 외 기타사항"
+      },
+      "product_specification": {
+        "type": "LNG CARGO TYPE",
+        "system": null,
+        "insulation_thick": null,
+        "diameter": null,
+        "yucheom": null
+      },
+      "material_and_processing": {
+        "material": "MATERIAL 10",
+        "welding_method": null,
+        "edge_finishing": null,
+        "weight_per_unit": "32.6"
+      },
+      "items": [
+        {
+          "item": "ITEM",
+          "size": "SIZE",
+          "material": "MATERIAL 10",
+          "h1": "430",
+          "h2": "470.4",
+          "weight_kg": "32.6"
+        },
+        {
+          "item": "M800-24-24",
+          "size": "P24xP600L2",
+          "material": "P24xP600L2",
+          "h1": "384.8",
+          "h2": "425",
+          "weight_kg": "37.9"
+        },
+        {
+          "item": "M800-18-18",
+          "size": "P24xP600L2",
+          "material": "P24xP600L2",
+          "h1": "336.8",
+          "h2": "470.4",
+          "weight_kg": "33.9"
+        },
+        {
+          "item": "M800-16-16",
+          "size": "P24xP600L2",
+          "material": "P24xP600L2",
+          "h1": "324.4",
+          "h2": "470.4",
+          "weight_kg": "32.6"
+        }
+      ],
+      "image_path": "image/page_12.png"
+    },
+    {
+      "page": 13,
+      "source_file": "2585-AOB-00062_001_02_A4.pdf",
+      "drawing_metadata": {
+        "standard_name": "LIMIT STOPPER 20\" (500A)",
+        "size_specification": "20\" (500A)",
+        "drawing_number": "2585DA500G114-AOB-ANC-JH",
+        "filename": "2585DA500G114-AOB-ANC-JH",
+        "stock_number": "PZAF0A500S2",
+        "project_number": "2585"
+      },
+      "product_specification": {
+        "type": "QA",
+        "system": "VAPOUR SYSTEM(CG)",
+        "insulation_thick": "80mm",
+        "diameter": "500A(20\")",
+        "yucheom": "QA-500S"
+      },
+      "material_and_processing": {
+        "material": "SUS316L",
+        "welding_method": "ALL TIG WELDING",
+        "edge_finishing": "EDGE SMOOTH GRINDING : R3",
+        "weight_per_unit": "61.5 KG/EA"
+      },
+      "image_path": "image/PZAF0A500S2.png"
+    }
+  ]
+}

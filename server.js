@@ -42,6 +42,7 @@ const upload = multer({
 let globalState = {
   prData: [],
   poHistory: [],
+  drawingsData: null,  // 도면 데이터
   processingResults: null,
   llmLogs: [],
   emailLogs: [],
@@ -53,6 +54,104 @@ let globalState = {
     logs: []
   }
 };
+
+// 도면 데이터 로드 함수
+function loadDrawingsData() {
+  try {
+    const drawingsPath = path.join(__dirname, 'data', 'drawings_data.json');
+    if (fs.existsSync(drawingsPath)) {
+      const data = JSON.parse(fs.readFileSync(drawingsPath, 'utf-8'));
+      globalState.drawingsData = data;
+      console.log(`[INFO] 도면 데이터 로드 완료: ${data.drawings?.length || 0}건`);
+      return data;
+    }
+  } catch (e) {
+    console.log('[WARN] 도면 데이터 로드 실패:', e.message);
+  }
+  return null;
+}
+
+// 도면 유사 사양가 산정 함수
+function findSimilarDrawingPrice(materialNo, poHistory, drawingsData) {
+  if (!drawingsData || !drawingsData.drawings) {
+    return null;
+  }
+  
+  // 자재번호에서 키 추출 (호선번호 5자리 제거: 2597A + PZAFCS + ...)
+  const materialKey = materialNo.length > 5 ? materialNo.substring(5) : materialNo;
+  const prefix = materialKey.substring(0, 6); // PZAFCS, PZAFQB 등
+  
+  // PZAF 패턴만 처리 (배관재)
+  if (!prefix.startsWith('PZAF')) {
+    return null;
+  }
+  
+  // 1. 도면 데이터에서 유사 자재 찾기 (PZAFCS, PZAFQB 패턴)
+  const similarDrawings = drawingsData.drawings.filter(d => {
+    const stockNum = d.drawing_metadata?.stock_number || '';
+    return stockNum.startsWith(prefix) || stockNum.includes(prefix.substring(2)); // PZAFCS 또는 AFCS
+  });
+  
+  if (similarDrawings.length === 0) return null;
+  
+  // 2. PO 실적에서 유사 패턴 자재 찾기
+  const similarPO = poHistory.filter(row => {
+    const poMatNum = String(row['자재번호'] || '');
+    return poMatNum.includes(prefix);
+  });
+  
+  if (similarPO.length === 0) return null;
+  
+  // 3. kg당 평균 단가 계산
+  let totalAmount = 0;
+  let totalWeight = 0;
+  const priceDetails = [];
+  
+  similarPO.forEach(po => {
+    const amount = parseFloat(po['발주금액(KRW)-변환']) || 0;
+    const weight = parseFloat(po['발주중량(KG)']) || 0;
+    const qty = parseFloat(po['발주수량']) || 1;
+    
+    if (amount > 0 && weight > 0) {
+      totalAmount += amount;
+      totalWeight += weight;
+      priceDetails.push({
+        materialNo: po['자재번호'],
+        amount: amount,
+        weight: weight,
+        qty: qty,
+        unitPrice: Math.round(amount / qty),
+        pricePerKg: Math.round(amount / weight)
+      });
+    }
+  });
+  
+  if (totalWeight === 0) return null;
+  
+  const avgPricePerKg = totalAmount / totalWeight;
+  
+  // 4. 평균 단위중량 계산
+  const avgUnitWeight = priceDetails.reduce((sum, p) => sum + (p.weight / p.qty), 0) / priceDetails.length;
+  
+  // 5. 도면 정보 추출
+  const drawingInfo = similarDrawings.map(d => ({
+    stockNumber: d.drawing_metadata?.stock_number,
+    standardName: d.drawing_metadata?.standard_name,
+    material: d.material_and_processing?.material,
+    weightPerUnit: d.material_and_processing?.weight_per_unit,
+    type: d.product_specification?.type
+  }));
+  
+  return {
+    avgPricePerKg: Math.round(avgPricePerKg),
+    avgUnitWeight: Math.round(avgUnitWeight * 10) / 10,
+    similarCount: similarPO.length,
+    prefix: prefix,
+    drawingInfo: drawingInfo,
+    priceDetails: priceDetails.slice(0, 10), // 상위 10건만
+    reasoning: `${prefix} 패턴 ${similarPO.length}건의 PO 실적 기반, 평균 kg당 단가 ${Math.round(avgPricePerKg).toLocaleString()}원/kg, 평균 단위중량 ${(Math.round(avgUnitWeight * 10) / 10)}kg/EA`
+  };
+}
 
 // Configuration
 const CONFIG = {
@@ -613,6 +712,67 @@ app.get('/api/results', (req, res) => {
   res.json(globalState.processingResults);
 });
 
+// Get price estimation reasoning (도면 유사 사양가 근거)
+app.get('/api/price-reasoning/:prId', (req, res) => {
+  const { prId } = req.params;
+  
+  if (!globalState.processingResults?.quotationData) {
+    return res.status(404).json({ error: 'No quotation data' });
+  }
+  
+  const pr = globalState.processingResults.quotationData.find(
+    q => String(q['구매요청']) === String(prId)
+  );
+  
+  if (!pr) {
+    return res.status(404).json({ error: 'PR not found' });
+  }
+  
+  const reasoning = {
+    prId: prId,
+    materialNo: pr['자재번호'],
+    description: pr['내역'],
+    method: pr['예정가_산정방법'],
+    estimatedPrice: pr['입찰예정가'],
+    recentOrderPrice: pr['최근발주단가'],
+    quantity: pr['요청수량'],
+    unitWeight: pr['단중(kg)'],
+    materialGroup: pr['자재그룹']
+  };
+  
+  // 산정방법별 상세 근거
+  if (pr['예정가_산정방법'] === '자재+내역 일치') {
+    reasoning.detail = {
+      type: 'exact_match',
+      description: '동일 자재번호+내역의 과거 PO 발주실적 기반',
+      formula: '입찰예정가 = 과거 발주단가 × 요청수량'
+    };
+  } else if (pr['예정가_산정방법'] === '도면 유사 사양가') {
+    reasoning.detail = {
+      type: 'similar_drawing',
+      description: '유사 도면 패턴 기반 예상가 산정',
+      similarInfo: pr['유사사양_근거'] || {},
+      formula: '입찰예정가 = 유사자재 평균 kg당 단가 × 추정 중량 × 요청수량'
+    };
+  } else if (pr['예정가_산정방법'] === '자재별 그룹 단가 평균') {
+    reasoning.detail = {
+      type: 'group_average',
+      description: '자재그룹별 중량 기준 평균단가 적용',
+      avgPricePerKg: pr['그룹평균단가_원KG'],
+      group: pr['산정그룹'],
+      formula: '입찰예정가 = 그룹 평균단가(원/kg) × 단중(kg) × 요청수량'
+    };
+  } else {
+    reasoning.detail = {
+      type: 'default',
+      description: '과거 실적 없음, 기본값 적용',
+      defaultPrice: 1000000
+    };
+  }
+  
+  res.json(reasoning);
+});
+
 // Get quotation list
 app.get('/api/quotations', (req, res) => {
   if (!globalState.processingResults) {
@@ -1146,9 +1306,15 @@ async function processAgent() {
 
   // Price estimation - 3단계 우선순위 적용
   // 1순위: 자재+내역 일치 (정확한 매칭)
-  // 2순위: 도면 유사 사양가 (향후 구현 예정, 현재 자재별 그룹 단가 평균으로 대체)
+  // 2순위: 도면 유사 사양가 (자재번호 패턴 기반 유사 도면 매칭)
   // 3순위: 자재별 그룹 단가 평균 (자재 그룹별 중량 기준 평균단가)
   addLog('입찰 예정가 산정 중...');
+  
+  // 도면 데이터 로드
+  if (!globalState.drawingsData) {
+    loadDrawingsData();
+  }
+  addLog(`도면 데이터 상태: ${globalState.drawingsData ? globalState.drawingsData.drawings?.length + '건' : '미로드'}`);
   
   // 자재그룹별 중량 기준 평균단가 계산
   // 그룹키: '자재그룹' 필드 (ex: 1P0M01, 1P0K02)
@@ -1199,33 +1365,58 @@ async function processAgent() {
       row['예정가_산정방법'] = '자재+내역 일치';
       row['최근발주단가'] = Math.round(unitPrice * qty); // 총액 기준 (단가 × 요청수량)
     }
-    // 2순위/3순위: 자재별 그룹 단가 평균 (자재그룹별 중량 기준)
-    // 입찰예정가 = 평균단가(원/KG) × 요청수량 × 단중(KG)
-    else if (groupAvgPricePerKg[materialGroup] && unitWeight > 0) {
-      const avgPricePerKg = groupAvgPricePerKg[materialGroup];
-      const estimatedPrice = avgPricePerKg * qty * unitWeight;
-      row['입찰예정가'] = Math.ceil(estimatedPrice); // 올림 처리
-      row['예정가_산정방법'] = '자재별 그룹 단가 평균';
-      row['최근발주단가'] = Math.ceil(estimatedPrice); // 총액 기준 (입찰예정가와 동일, 올림)
-      row['그룹평균단가_원KG'] = avgPricePerKg; // 디버깅용
-      row['산정그룹'] = materialGroup;
-    }
-    // 자재별 그룹 단가 평균 - 단중이 없는 경우: 수량 기준으로 대체
-    else if (groupAvgPricePerKg[materialGroup]) {
-      const avgPricePerKg = groupAvgPricePerKg[materialGroup];
-      const estimatedPrice = Math.ceil(avgPricePerKg * qty); // 올림 처리
-      row['입찰예정가'] = estimatedPrice;
-      row['예정가_산정방법'] = '자재별 그룹 단가 평균';
-      row['최근발주단가'] = estimatedPrice; // 총액 기준 (올림)
-      row['그룹평균단가_원KG'] = avgPricePerKg;
-      row['산정그룹'] = materialGroup;
-    }
-    // 기본값: 해당 자재그룹의 PO 실적 없음
+    // 2순위: 도면 유사 사양가
     else {
-      row['입찰예정가'] = 1000000;
-      row['예정가_산정방법'] = '기본값';
-      row['최근발주단가'] = 0;
-      row['산정그룹'] = materialGroup || 'N/A';
+      const similarResult = findSimilarDrawingPrice(row['자재번호'], poHistory, globalState.drawingsData);
+      
+      // 도면 유사 사양가 적용 조건: 유사 도면이 있고 PO 실적이 1건 이상
+      if (similarResult && similarResult.similarCount >= 1) {
+        // 도면 유사 사양가 적용
+        const estimatedWeight = unitWeight > 0 ? unitWeight : similarResult.avgUnitWeight;
+        const estimatedPrice = similarResult.avgPricePerKg * estimatedWeight * qty;
+        
+        row['입찰예정가'] = Math.ceil(estimatedPrice);
+        row['예정가_산정방법'] = '도면 유사 사양가';
+        row['최근발주단가'] = Math.ceil(estimatedPrice);
+        row['유사사양_근거'] = {
+          prefix: similarResult.prefix,
+          avgPricePerKg: similarResult.avgPricePerKg,
+          avgUnitWeight: similarResult.avgUnitWeight,
+          estimatedWeight: estimatedWeight,
+          similarCount: similarResult.similarCount,
+          reasoning: similarResult.reasoning,
+          drawingInfo: similarResult.drawingInfo,
+          priceDetails: similarResult.priceDetails
+        };
+        row['산정그룹'] = similarResult.prefix;
+      }
+      // 3순위: 자재별 그룹 단가 평균 (자재그룹별 중량 기준)
+      else if (groupAvgPricePerKg[materialGroup] && unitWeight > 0) {
+        const avgPricePerKg = groupAvgPricePerKg[materialGroup];
+        const estimatedPrice = avgPricePerKg * qty * unitWeight;
+        row['입찰예정가'] = Math.ceil(estimatedPrice);
+        row['예정가_산정방법'] = '자재별 그룹 단가 평균';
+        row['최근발주단가'] = Math.ceil(estimatedPrice);
+        row['그룹평균단가_원KG'] = avgPricePerKg;
+        row['산정그룹'] = materialGroup;
+      }
+      // 자재별 그룹 단가 평균 - 단중이 없는 경우
+      else if (groupAvgPricePerKg[materialGroup]) {
+        const avgPricePerKg = groupAvgPricePerKg[materialGroup];
+        const estimatedPrice = Math.ceil(avgPricePerKg * qty);
+        row['입찰예정가'] = estimatedPrice;
+        row['예정가_산정방법'] = '자재별 그룹 단가 평균';
+        row['최근발주단가'] = estimatedPrice;
+        row['그룹평균단가_원KG'] = avgPricePerKg;
+        row['산정그룹'] = materialGroup;
+      }
+      // 기본값: 해당 자재그룹의 PO 실적 없음
+      else {
+        row['입찰예정가'] = 1000000;
+        row['예정가_산정방법'] = '기본값';
+        row['최근발주단가'] = 0;
+        row['산정그룹'] = materialGroup || 'N/A';
+      }
     }
   }
 
@@ -1407,4 +1598,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 PR→PO Agent Server running on port ${PORT}`);
   console.log(`📅 Simulation Date: ${CONFIG.SIMULATION_DATE.toISOString().split('T')[0]}`);
   console.log(`🧠 LLM: ${process.env.ANTHROPIC_API_KEY ? 'Enabled' : 'Disabled (no API key)'}`);
+  
+  // 서버 시작 시 도면 데이터 로드
+  loadDrawingsData();
 });

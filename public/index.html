@@ -556,7 +556,7 @@
                         <div class="mini-card cursor-pointer hover:ring-2 hover:ring-purple-300 transition-all" onclick="filterPriceList('도면 유사')" id="card_llm">
                             <p class="text-xl font-bold text-purple-600" id="s5_llm">0</p>
                             <p class="text-xs text-gray-600">도면 유사 사양가</p>
-                            <p class="text-[10px] text-gray-400">향후 구현 예정</p>
+                            <p class="text-[10px] text-purple-400">AI 기반 유사 매칭</p>
                         </div>
                         <div class="mini-card border-l-4 border-orange-500 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all" onclick="filterPriceList('기본값')" id="card_default">
                             <p class="text-xl font-bold text-orange-600" id="s5_default">0</p>
@@ -1637,7 +1637,7 @@
             
             const exact = priceMethods['자재+내역 일치'] || 0;
             const group = priceMethods['자재별 그룹 단가 평균'] || 0;
-            const llm = priceMethods['LLM 산정'] || 0;
+            const llm = priceMethods['도면 유사 사양가'] || 0;
             const def = priceMethods['기본값'] || 0;
             
             document.getElementById('s5_exact').textContent = exact.toLocaleString();
@@ -1652,6 +1652,155 @@
             
             // Initial render
             filterPriceList(s5PriceFilter);
+        }
+        
+        // 예정가 산정 근거 보기 함수
+        async function showPriceReasoning(prId) {
+            try {
+                const response = await fetch(`/api/price-reasoning/${prId}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    alert('근거 정보를 가져올 수 없습니다.');
+                    return;
+                }
+                
+                let detailHtml = '';
+                
+                if (data.method === '도면 유사 사양가' && data.detail?.similarInfo) {
+                    const info = data.detail.similarInfo;
+                    detailHtml = `
+                        <div class="bg-purple-50 p-3 rounded mb-3">
+                            <h4 class="font-bold text-purple-700 mb-2">🔍 도면 유사 사양가 분석</h4>
+                            <p class="text-sm text-gray-700">${info.reasoning || ''}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">패턴 그룹</p>
+                                <p class="font-bold">${info.prefix || '-'}</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">유사 자재 수</p>
+                                <p class="font-bold">${info.similarCount || 0}건</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">평균 kg당 단가</p>
+                                <p class="font-bold">₩${(info.avgPricePerKg || 0).toLocaleString()}/kg</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">추정 단위중량</p>
+                                <p class="font-bold">${info.estimatedWeight || info.avgUnitWeight || '-'}kg/EA</p>
+                            </div>
+                        </div>
+                        ${info.drawingInfo?.length > 0 ? `
+                        <div class="mb-3">
+                            <h5 class="font-semibold text-sm mb-1">📐 참조 도면 정보</h5>
+                            <div class="text-xs bg-gray-50 p-2 rounded max-h-24 overflow-y-auto">
+                                ${info.drawingInfo.map(d => `
+                                    <p>• ${d.stockNumber}: ${d.standardName} (${d.material}, ${d.weightPerUnit})</p>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        ${info.priceDetails?.length > 0 ? `
+                        <div>
+                            <h5 class="font-semibold text-sm mb-1">📊 PO 실적 참조 (상위 ${info.priceDetails.length}건)</h5>
+                            <div class="text-xs bg-gray-50 p-2 rounded max-h-32 overflow-y-auto">
+                                <table class="w-full">
+                                    <thead><tr class="border-b"><th class="text-left">자재번호</th><th class="text-right">금액</th><th class="text-right">중량</th><th class="text-right">kg당단가</th></tr></thead>
+                                    <tbody>
+                                    ${info.priceDetails.map(p => `
+                                        <tr class="border-b border-gray-200">
+                                            <td>${p.materialNo}</td>
+                                            <td class="text-right">₩${p.amount.toLocaleString()}</td>
+                                            <td class="text-right">${p.weight}kg</td>
+                                            <td class="text-right">₩${p.pricePerKg.toLocaleString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        ` : ''}
+                    `;
+                } else if (data.method === '자재별 그룹 단가 평균') {
+                    detailHtml = `
+                        <div class="bg-green-50 p-3 rounded mb-3">
+                            <h4 class="font-bold text-green-700 mb-2">📊 자재별 그룹 단가 평균</h4>
+                            <p class="text-sm text-gray-700">${data.detail?.description || ''}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">자재그룹</p>
+                                <p class="font-bold">${data.detail?.group || data.materialGroup || '-'}</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">그룹 평균 kg당 단가</p>
+                                <p class="font-bold">₩${(data.detail?.avgPricePerKg || 0).toLocaleString()}/kg</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">단중(kg)</p>
+                                <p class="font-bold">${data.unitWeight || '-'}kg/EA</p>
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                <p class="text-xs text-gray-500">요청수량</p>
+                                <p class="font-bold">${data.quantity || 1}EA</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-2 bg-blue-50 rounded">
+                            <p class="text-xs text-blue-700"><strong>산정 공식:</strong> ${data.detail?.formula || ''}</p>
+                        </div>
+                    `;
+                } else {
+                    detailHtml = `
+                        <div class="bg-gray-50 p-3 rounded">
+                            <p class="text-sm">${data.detail?.description || '상세 정보 없음'}</p>
+                        </div>
+                    `;
+                }
+                
+                // 모달 표시
+                const modalHtml = `
+                    <div id="priceReasoningModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+                        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+                            <div class="p-4 border-b flex justify-between items-center sticky top-0 bg-white">
+                                <h3 class="font-bold text-lg">📋 예정가 산정 근거</h3>
+                                <button onclick="document.getElementById('priceReasoningModal').remove()" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                            </div>
+                            <div class="p-4">
+                                <div class="mb-4 pb-3 border-b">
+                                    <p class="text-sm text-gray-500">PR번호: <span class="font-bold text-gray-800">${data.prId}</span></p>
+                                    <p class="text-sm text-gray-500">자재번호: <span class="font-bold text-gray-800">${data.materialNo}</span></p>
+                                    <p class="text-sm text-gray-500 truncate" title="${data.description}">내역: ${(data.description || '').substring(0, 40)}...</p>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="px-2 py-1 rounded text-sm font-bold ${
+                                            data.method === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
+                                            data.method === '도면 유사 사양가' ? 'bg-purple-100 text-purple-800' :
+                                            data.method === '자재별 그룹 단가 평균' ? 'bg-green-100 text-green-800' :
+                                            'bg-orange-100 text-orange-800'
+                                        }">${data.method}</span>
+                                        <span class="text-lg font-bold">₩${(data.estimatedPrice || 0).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                ${detailHtml}
+                            </div>
+                            <div class="p-4 border-t bg-gray-50">
+                                <button onclick="document.getElementById('priceReasoningModal').remove()" class="w-full py-2 bg-gray-600 text-white rounded hover:bg-gray-700">닫기</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 기존 모달 제거 후 새 모달 추가
+                document.getElementById('priceReasoningModal')?.remove();
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+            } catch (error) {
+                console.error('Error fetching price reasoning:', error);
+                alert('근거 정보를 가져오는 중 오류가 발생했습니다.');
+            }
         }
         
         function filterPriceList(filterType) {
@@ -1674,10 +1823,9 @@
                 document.getElementById('card_group')?.classList.add('ring-2', 'ring-green-500');
                 filterLabel = '(자재별 그룹 단가 평균)';
             } else if (filterType === '도면 유사') {
-                // 향후 구현 예정 - 현재는 사용하지 않음
-                filtered = [];
+                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '도면 유사 사양가');
                 document.getElementById('card_llm')?.classList.add('ring-2', 'ring-purple-500');
-                filterLabel = '(도면 유사 사양가 - 준비중)';
+                filterLabel = '(도면 유사 사양가)';
             } else if (filterType === '기본값') {
                 filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '기본값');
                 document.getElementById('card_default')?.classList.add('ring-2', 'ring-orange-500');
@@ -1700,17 +1848,23 @@
             document.getElementById('s5_priceList').innerHTML = filtered.map((pr, idx) => {
                 const originalIdx = quotationData.indexOf(pr);
                 const recentPrice = pr['최근발주단가'] || 0;
+                const method = pr['예정가_산정방법'] || '-';
+                const showReasonBtn = method === '도면 유사 사양가' || method === '자재별 그룹 단가 평균';
                 return `
                 <tr class="border-b hover:bg-gray-50 ${pr['예정가_산정방법'] === '기본값' ? 'bg-orange-50' : ''}" id="price-row-${originalIdx}">
                     <td class="px-2 py-2 text-xs">${pr['예정가_산정방법'] === '기본값' ? '⚠️' : '✅'} ${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2">
-                        <span class="px-1 py-0.5 rounded text-xs ${
-                            pr['예정가_산정방법'] === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
-                            pr['예정가_산정방법'] === '자재별 그룹 단가 평균' ? 'bg-green-100 text-green-800' :
-                            'bg-orange-100 text-orange-800'
-                        }">${pr['예정가_산정방법'] || '-'}</span>
+                        <div class="flex items-center gap-1">
+                            <span class="px-1 py-0.5 rounded text-xs ${
+                                pr['예정가_산정방법'] === '자재+내역 일치' ? 'bg-blue-100 text-blue-800' :
+                                pr['예정가_산정방법'] === '도면 유사 사양가' ? 'bg-purple-100 text-purple-800' :
+                                pr['예정가_산정방법'] === '자재별 그룹 단가 평균' ? 'bg-green-100 text-green-800' :
+                                'bg-orange-100 text-orange-800'
+                            }">${method}</span>
+                            ${showReasonBtn ? `<button onclick="showPriceReasoning('${pr['구매요청']}')" class="px-1 py-0.5 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200" title="산정 근거 보기">📋</button>` : ''}
+                        </div>
                     </td>
                     <td class="px-2 py-2 text-right text-xs text-gray-600">
                         ${recentPrice > 0 ? '₩' + recentPrice.toLocaleString() : '-'}
