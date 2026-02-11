@@ -1661,85 +1661,206 @@
                 if (data.method === '도면 유사 사양가' && data.detail?.similarInfo) {
                     const info = data.detail.similarInfo;
                     detailHtml = `
-                        <div class="bg-purple-50 p-3 rounded mb-3">
-                            <h4 class="font-bold text-purple-700 mb-2">🔍 도면 유사 사양가 분석</h4>
-                            <p class="text-sm text-gray-700">${info.reasoning || ''}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mb-3">
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">패턴 그룹</p>
-                                <p class="font-bold">${info.prefix || '-'}</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">유사 자재 수</p>
-                                <p class="font-bold">${info.similarCount || 0}건</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">평균 kg당 단가</p>
-                                <p class="font-bold">₩${(info.avgPricePerKg || 0).toLocaleString()}/kg</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">추정 단위중량</p>
-                                <p class="font-bold">${info.estimatedWeight || info.avgUnitWeight || '-'}kg/EA</p>
+                        <!-- Step 1: 왜 도면 유사 사양가를 사용했는지 -->
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-yellow-600 font-bold mr-2">Step 1</span>
+                                <div>
+                                    <p class="font-medium text-yellow-800">실적가 없음 → 도면 유사 사양가 적용</p>
+                                    <p class="text-xs text-yellow-700 mt-1">해당 자재의 동일 자재번호+내역 기준 과거 발주 실적이 없어, AI가 유사 도면 기반으로 예상가를 산정했습니다.</p>
+                                </div>
                             </div>
                         </div>
-                        ${info.drawingInfo?.length > 0 ? `
-                        <div class="mb-3">
-                            <h5 class="font-semibold text-sm mb-1">📐 참조 도면 정보</h5>
-                            <div class="text-xs bg-gray-50 p-2 rounded max-h-24 overflow-y-auto">
-                                ${info.drawingInfo.map(d => `
-                                    <p>• ${d.stockNumber}: ${d.standardName} (${d.material}, ${d.weightPerUnit})</p>
-                                `).join('')}
+
+                        <!-- Step 2: 자재속성 + 패턴 추출 -->
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-blue-600 font-bold mr-2">Step 2</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-blue-800">자재 속성 분석 및 패턴 추출</p>
+                                    <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                        <div class="bg-white p-2 rounded">
+                                            <p class="text-gray-500">자재번호</p>
+                                            <p class="font-mono font-bold">${data.materialNo || '-'}</p>
+                                        </div>
+                                        <div class="bg-white p-2 rounded">
+                                            <p class="text-gray-500">추출된 패턴</p>
+                                            <p class="font-mono font-bold text-blue-600">${info.prefix || '-'}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-blue-700 mt-2">→ 자재번호에서 호선번호(5자리)를 제외하고 자재그룹 패턴(${info.prefix})을 추출했습니다.</p>
+                                </div>
                             </div>
                         </div>
-                        ` : ''}
-                        ${info.priceDetails?.length > 0 ? `
-                        <div>
-                            <h5 class="font-semibold text-sm mb-1">📊 PO 실적 참조 (상위 ${info.priceDetails.length}건)</h5>
-                            <div class="text-xs bg-gray-50 p-2 rounded max-h-32 overflow-y-auto">
-                                <table class="w-full">
-                                    <thead><tr class="border-b"><th class="text-left">자재번호</th><th class="text-right">금액</th><th class="text-right">중량</th><th class="text-right">kg당단가</th></tr></thead>
-                                    <tbody>
-                                    ${info.priceDetails.map(p => `
-                                        <tr class="border-b border-gray-200">
-                                            <td>${p.materialNo}</td>
-                                            <td class="text-right">₩${p.amount.toLocaleString()}</td>
-                                            <td class="text-right">${p.weight}kg</td>
-                                            <td class="text-right">₩${p.pricePerKg.toLocaleString()}</td>
-                                        </tr>
-                                    `).join('')}
-                                    </tbody>
-                                </table>
+
+                        <!-- Step 3: 유사 도면 매칭 -->
+                        <div class="bg-purple-50 border-l-4 border-purple-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-purple-600 font-bold mr-2">Step 3</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-purple-800">유사 도면 매칭 (${info.drawingInfo?.length || 0}건 발견)</p>
+                                    ${info.drawingInfo?.length > 0 ? `
+                                    <div class="mt-2 text-xs bg-white p-2 rounded max-h-24 overflow-y-auto">
+                                        ${info.drawingInfo.map(d => `
+                                            <div class="flex justify-between py-1 border-b border-gray-100">
+                                                <span class="font-mono">${d.stockNumber}</span>
+                                                <span class="text-gray-600">${d.standardName} | ${d.material} | ${d.weightPerUnit}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <p class="text-xs text-purple-700 mt-2">→ 패턴 <strong>${info.prefix}</strong>와 일치하는 도면 ${info.drawingInfo?.length || 0}건을 DB에서 검색했습니다.</p>
+                                    ` : '<p class="text-xs text-purple-700 mt-2">→ 도면 DB에서 유사 패턴을 검색했습니다.</p>'}
+                                </div>
                             </div>
                         </div>
-                        ` : ''}
+
+                        <!-- Step 4: 과거 PO 실적 조회 -->
+                        <div class="bg-green-50 border-l-4 border-green-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-green-600 font-bold mr-2">Step 4</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-green-800">과거 PO 발주 실적 조회 (${info.similarCount || 0}건)</p>
+                                    ${info.priceDetails?.length > 0 ? `
+                                    <div class="mt-2 text-xs bg-white rounded overflow-hidden">
+                                        <table class="w-full">
+                                            <thead class="bg-gray-100">
+                                                <tr>
+                                                    <th class="text-left p-1">자재번호</th>
+                                                    <th class="text-right p-1">발주금액</th>
+                                                    <th class="text-right p-1">중량</th>
+                                                    <th class="text-right p-1">kg당 단가</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            ${info.priceDetails.slice(0, 5).map(p => `
+                                                <tr class="border-t border-gray-100">
+                                                    <td class="p-1 font-mono text-xs">${p.materialNo}</td>
+                                                    <td class="text-right p-1">₩${p.amount.toLocaleString()}</td>
+                                                    <td class="text-right p-1">${p.weight}kg</td>
+                                                    <td class="text-right p-1 font-bold">₩${p.pricePerKg.toLocaleString()}</td>
+                                                </tr>
+                                            `).join('')}
+                                            </tbody>
+                                        </table>
+                                        ${info.priceDetails.length > 5 ? `<p class="text-center text-gray-400 py-1">... 외 ${info.priceDetails.length - 5}건</p>` : ''}
+                                    </div>
+                                    ` : ''}
+                                    <p class="text-xs text-green-700 mt-2">→ 동일 패턴(${info.prefix}) 자재의 과거 발주 실적 <strong>${info.similarCount}건</strong>을 조회하여 평균 단가를 산출했습니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5: 최종 예상가 산출 -->
+                        <div class="bg-indigo-100 border-l-4 border-indigo-500 p-3 rounded">
+                            <div class="flex items-start">
+                                <span class="text-indigo-600 font-bold mr-2">Step 5</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-indigo-800">최종 예상가 산출</p>
+                                    <div class="mt-2 bg-white p-3 rounded text-sm">
+                                        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                                            <div>
+                                                <p class="text-xs text-gray-500">평균 kg당 단가</p>
+                                                <p class="font-bold text-indigo-600">₩${(info.avgPricePerKg || 0).toLocaleString()}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">추정 중량</p>
+                                                <p class="font-bold text-indigo-600">${info.estimatedWeight || info.avgUnitWeight || '-'}kg</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">요청수량</p>
+                                                <p class="font-bold text-indigo-600">${data.quantity || 1}EA</p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-indigo-50 p-2 rounded text-center">
+                                            <p class="text-xs text-gray-600 mb-1">산정 공식</p>
+                                            <p class="font-mono text-sm">
+                                                <span class="text-indigo-600">₩${(info.avgPricePerKg || 0).toLocaleString()}</span>/kg × 
+                                                <span class="text-indigo-600">${info.estimatedWeight || info.avgUnitWeight || 0}</span>kg × 
+                                                <span class="text-indigo-600">${data.quantity || 1}</span>EA
+                                            </p>
+                                            <p class="text-lg font-bold text-indigo-800 mt-1">= ₩${(data.estimatedPrice || 0).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     `;
                 } else if (data.method === '자재별 그룹 단가 평균') {
                     detailHtml = `
-                        <div class="bg-green-50 p-3 rounded mb-3">
-                            <h4 class="font-bold text-green-700 mb-2">📊 자재별 그룹 단가 평균</h4>
-                            <p class="text-sm text-gray-700">${data.detail?.description || ''}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">자재그룹</p>
-                                <p class="font-bold">${data.detail?.group || data.materialGroup || '-'}</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">그룹 평균 kg당 단가</p>
-                                <p class="font-bold">₩${(data.detail?.avgPricePerKg || 0).toLocaleString()}/kg</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">단중(kg)</p>
-                                <p class="font-bold">${data.unitWeight || '-'}kg/EA</p>
-                            </div>
-                            <div class="bg-gray-50 p-2 rounded">
-                                <p class="text-xs text-gray-500">요청수량</p>
-                                <p class="font-bold">${data.quantity || 1}EA</p>
+                        <!-- Step 1: 왜 자재별 그룹 단가 평균을 사용했는지 -->
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-yellow-600 font-bold mr-2">Step 1</span>
+                                <div>
+                                    <p class="font-medium text-yellow-800">실적가 없음 + 도면 미매칭 → 그룹 평균 단가 적용</p>
+                                    <p class="text-xs text-yellow-700 mt-1">해당 자재의 과거 발주 실적이 없고, 유사 도면도 찾지 못해 자재그룹 기준 평균 단가로 예상가를 산정했습니다.</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-3 p-2 bg-blue-50 rounded">
-                            <p class="text-xs text-blue-700"><strong>산정 공식:</strong> ${data.detail?.formula || ''}</p>
+
+                        <!-- Step 2: 자재그룹 분류 -->
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-blue-600 font-bold mr-2">Step 2</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-blue-800">자재그룹 분류</p>
+                                    <div class="mt-2 bg-white p-2 rounded">
+                                        <p class="text-xs text-gray-500">해당 자재그룹</p>
+                                        <p class="font-mono font-bold text-blue-600">${data.detail?.group || data.materialGroup || '-'}</p>
+                                    </div>
+                                    <p class="text-xs text-blue-700 mt-2">→ PR 데이터의 자재그룹 필드를 기준으로 분류했습니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: 그룹 평균 단가 산출 -->
+                        <div class="bg-green-50 border-l-4 border-green-400 p-3 rounded mb-4">
+                            <div class="flex items-start">
+                                <span class="text-green-600 font-bold mr-2">Step 3</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-green-800">그룹 내 과거 PO 실적 기반 평균 단가</p>
+                                    <div class="mt-2 bg-white p-2 rounded text-sm">
+                                        <p class="text-xs text-gray-500 mb-1">산출 방식</p>
+                                        <p class="text-gray-700">동일 자재그룹의 과거 PO 실적에서 <strong>총 발주금액 ÷ 총 발주중량</strong>으로 kg당 평균 단가를 산출</p>
+                                    </div>
+                                    <p class="text-xs text-green-700 mt-2">→ 그룹 평균 kg당 단가: <strong>₩${(data.detail?.avgPricePerKg || 0).toLocaleString()}/kg</strong></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: 최종 예상가 산출 -->
+                        <div class="bg-indigo-100 border-l-4 border-indigo-500 p-3 rounded">
+                            <div class="flex items-start">
+                                <span class="text-indigo-600 font-bold mr-2">Step 4</span>
+                                <div class="flex-1">
+                                    <p class="font-medium text-indigo-800">최종 예상가 산출</p>
+                                    <div class="mt-2 bg-white p-3 rounded text-sm">
+                                        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                                            <div>
+                                                <p class="text-xs text-gray-500">그룹 평균 kg당 단가</p>
+                                                <p class="font-bold text-indigo-600">₩${(data.detail?.avgPricePerKg || 0).toLocaleString()}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">단중(kg)</p>
+                                                <p class="font-bold text-indigo-600">${data.unitWeight || '-'}kg</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">요청수량</p>
+                                                <p class="font-bold text-indigo-600">${data.quantity || 1}EA</p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-indigo-50 p-2 rounded text-center">
+                                            <p class="text-xs text-gray-600 mb-1">산정 공식</p>
+                                            <p class="font-mono text-sm">
+                                                <span class="text-indigo-600">₩${(data.detail?.avgPricePerKg || 0).toLocaleString()}</span>/kg × 
+                                                <span class="text-indigo-600">${data.unitWeight || 0}</span>kg × 
+                                                <span class="text-indigo-600">${data.quantity || 1}</span>EA
+                                            </p>
+                                            <p class="text-lg font-bold text-indigo-800 mt-1">= ₩${(data.estimatedPrice || 0).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     `;
                 } else {
