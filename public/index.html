@@ -680,6 +680,9 @@
                                 <option value="all">전체 (<span id="s7_allCount">0</span>건)</option>
                                 <option value="review">검토필요 (<span id="s7_reviewCount">0</span>건)</option>
                                 <option value="auto">자동완료 (<span id="s7_autoCount">0</span>건)</option>
+                                <option value="appropriate">적정 (<span id="s7_appropriateCount">0</span>건)</option>
+                                <option value="requote">재견적 요청 (<span id="s7_requoteCount">0</span>건)</option>
+                                <option value="conditional">조건부 승인 (<span id="s7_conditionalCount">0</span>건)</option>
                             </select>
                             <span class="text-sm text-orange-600 font-medium"><span id="hitlTotalCount">0</span>건 검토 필요</span>
                         </div>
@@ -2209,8 +2212,11 @@
             if (!processingResults) return;
             
             const allItems = quotationData;
-            const hitlItems = quotationData.filter(pr => pr['HITL필요']);
-            const autoItems = quotationData.filter(pr => !pr['HITL필요']);
+            const hitlItems = quotationData.filter(pr => pr['HITL필요'] && !pr['검토결과']);
+            const autoItems = quotationData.filter(pr => !pr['HITL필요'] && !pr['검토결과']);
+            const appropriateItems = quotationData.filter(pr => pr['검토결과'] === '적정');
+            const requoteItems = quotationData.filter(pr => pr['검토결과'] === '재견적');
+            const conditionalItems = quotationData.filter(pr => pr['검토결과'] === '조건부 승인');
             
             document.getElementById('hitlTotalCount').textContent = hitlItems.length;
             
@@ -2221,7 +2227,11 @@
                     <option value="all">전체 (${allItems.length}건)</option>
                     <option value="review">검토필요 (${hitlItems.length}건)</option>
                     <option value="auto">자동완료 (${autoItems.length}건)</option>
+                    <option value="appropriate">적정 (${appropriateItems.length}건)</option>
+                    <option value="requote">재견적 요청 (${requoteItems.length}건)</option>
+                    <option value="conditional">조건부 승인 (${conditionalItems.length}건)</option>
                 `;
+                selectEl.value = s7ViewFilter;
             }
             
             filterHitlList(s7ViewFilter);
@@ -2232,9 +2242,15 @@
             
             let filteredItems;
             if (filterType === 'review') {
-                filteredItems = quotationData.filter(pr => pr['HITL필요']);
+                filteredItems = quotationData.filter(pr => pr['HITL필요'] && !pr['검토결과']);
             } else if (filterType === 'auto') {
-                filteredItems = quotationData.filter(pr => !pr['HITL필요']);
+                filteredItems = quotationData.filter(pr => !pr['HITL필요'] && !pr['검토결과']);
+            } else if (filterType === 'appropriate') {
+                filteredItems = quotationData.filter(pr => pr['검토결과'] === '적정');
+            } else if (filterType === 'requote') {
+                filteredItems = quotationData.filter(pr => pr['검토결과'] === '재견적');
+            } else if (filterType === 'conditional') {
+                filteredItems = quotationData.filter(pr => pr['검토결과'] === '조건부 승인');
             } else {
                 filteredItems = quotationData;
             }
@@ -2335,14 +2351,22 @@
             document.getElementById('s8_normal').textContent = normal;
             document.getElementById('s8_poor').textContent = poor;
             
-            // 검토결과별 집계
+            // 검토결과별 집계 - 실제 검토 데이터 기반
             let appropriate = 0, requote = 0, conditional = 0;
+            let autoCompleted = 0, needReview = 0;
             quotationData.forEach(pr => {
-                const result = pr['검토결과'] || (pr['HITL필요'] ? '검토 필요' : '적정');
-                if (result === '적정') appropriate++;
-                else if (result === '재견적') requote++;
-                else if (result === '조건부 승인') conditional++;
-                else appropriate++;  // 검토 필요가 아닌 자동완료 항목은 적정으로 처리
+                const result = pr['검토결과'];
+                if (result === '적정') {
+                    appropriate++;
+                } else if (result === '재견적') {
+                    requote++;
+                } else if (result === '조건부 승인') {
+                    conditional++;
+                } else if (pr['HITL필요']) {
+                    needReview++;  // 아직 검토되지 않은 항목
+                } else {
+                    autoCompleted++;  // 자동완료 (검토 불필요)
+                }
             });
             
             // 검토결과 카드 업데이트
@@ -2361,11 +2385,23 @@
                 const savingsSign = savingsRate >= 0 ? '▼' : '▲';
                 
                 const orderDate = pr['최근발주일'] || '2025-12-15';
-                const reviewResult = pr['검토결과'] || (pr['HITL필요'] ? '검토 필요' : '적정');
-                const reviewBgClass = reviewResult === '적정' ? 'bg-blue-100 text-blue-800' :
-                                      reviewResult === '재견적' ? 'bg-orange-100 text-orange-800' :
-                                      reviewResult === '조건부 승인' ? 'bg-purple-100 text-purple-800' :
-                                      'bg-gray-100 text-gray-800';
+                
+                // 검토결과: 실제 검토 데이터 기반
+                let reviewResult;
+                let reviewBgClass;
+                if (pr['검토결과']) {
+                    reviewResult = pr['검토결과'];
+                    reviewBgClass = reviewResult === '적정' ? 'bg-blue-100 text-blue-800' :
+                                    reviewResult === '재견적' ? 'bg-orange-100 text-orange-800' :
+                                    reviewResult === '조건부 승인' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-800';
+                } else if (pr['HITL필요']) {
+                    reviewResult = '검토 필요';
+                    reviewBgClass = 'bg-red-100 text-red-800';
+                } else {
+                    reviewResult = '자동완료';
+                    reviewBgClass = 'bg-green-100 text-green-800';
+                }
                 
                 return `
                     <tr class="border-b hover:bg-gray-50">
@@ -2572,7 +2608,21 @@
             const prId = document.getElementById('hitlModal').dataset.prId;
             const pr = quotationData.find(p => p['구매요청'] === prId);
             if (pr) {
-                pr['처리상태'] = '자동완료';
+                // 선택된 결정 가져오기
+                const decision = document.querySelector('input[name="decision"]:checked')?.value;
+                const reason = document.getElementById('decisionReason')?.value || '';
+                
+                // 결정에 따른 검토결과 설정
+                if (decision === 'approve') {
+                    pr['검토결과'] = '적정';
+                } else if (decision === 'renegotiate') {
+                    pr['검토결과'] = '재견적';
+                } else if (decision === 'conditional') {
+                    pr['검토결과'] = '조건부 승인';
+                }
+                
+                pr['검토사유'] = reason;
+                pr['처리상태'] = '검토완료';
                 pr['HITL필요'] = false;
             }
             closeHitlModal();
