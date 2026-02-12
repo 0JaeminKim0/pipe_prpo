@@ -1683,12 +1683,14 @@
         
         function populateStep5() {
             if (!processingResults) return;
-            const priceMethods = processingResults.summary.priceMethodSummary || {};
             
-            const exact = priceMethods['자재+내역 일치'] || 0;
-            const group = priceMethods['자재별 그룹 단가 평균'] || 0;
-            const llm = priceMethods['도면 유사 사양가'] || 0;
-            const def = priceMethods['기본값'] || 0;
+            // 견적제외 항목은 Step 5에서 제외
+            const includedData = quotationData.filter(pr => !pr['견적제외']);
+            
+            const exact = includedData.filter(pr => pr['예정가_산정방법'] === '자재+내역 일치').length;
+            const group = includedData.filter(pr => pr['예정가_산정방법'] === '자재별 그룹 단가 평균').length;
+            const llm = includedData.filter(pr => pr['예정가_산정방법'] === '도면 유사 사양가').length;
+            const def = includedData.filter(pr => pr['예정가_산정방법'] === '기본값').length;
             
             document.getElementById('s5_exact').textContent = exact.toLocaleString();
             document.getElementById('s5_group').textContent = group.toLocaleString();
@@ -1982,23 +1984,24 @@
                 document.getElementById(id)?.classList.remove('ring-2', 'ring-blue-500', 'ring-green-500', 'ring-purple-500', 'ring-orange-500');
             });
             
-            let filtered = [...quotationData];
+            // 견적제외 항목은 Step 5에서 제외
+            let filtered = quotationData.filter(pr => !pr['견적제외']);
             let filterLabel = '';
             
             if (filterType === '자재+내역 일치') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '자재+내역 일치');
+                filtered = filtered.filter(pr => pr['예정가_산정방법'] === '자재+내역 일치');
                 document.getElementById('card_exact')?.classList.add('ring-2', 'ring-blue-500');
                 filterLabel = '(자재+내역 일치)';
             } else if (filterType === '자재별 그룹 단가 평균') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '자재별 그룹 단가 평균');
+                filtered = filtered.filter(pr => pr['예정가_산정방법'] === '자재별 그룹 단가 평균');
                 document.getElementById('card_group')?.classList.add('ring-2', 'ring-green-500');
                 filterLabel = '(자재별 그룹 단가 평균)';
             } else if (filterType === '도면 유사') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '도면 유사 사양가');
+                filtered = filtered.filter(pr => pr['예정가_산정방법'] === '도면 유사 사양가');
                 document.getElementById('card_llm')?.classList.add('ring-2', 'ring-purple-500');
                 filterLabel = '(도면 유사 사양가)';
             } else if (filterType === '기본값') {
-                filtered = quotationData.filter(pr => pr['예정가_산정방법'] === '기본값');
+                filtered = filtered.filter(pr => pr['예정가_산정방법'] === '기본값');
                 document.getElementById('card_default')?.classList.add('ring-2', 'ring-orange-500');
                 filterLabel = '(기본값)';
             }
