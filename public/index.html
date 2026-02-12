@@ -1447,7 +1447,7 @@
             
             document.getElementById('s3_methodList').innerHTML = filtered.map(pr => {
                 const isStandard = pr['계약분류'] === '표준단가';
-                const selectionReason = isStandard ? '배량그룹 존재 표준 단가 계약 품목' : '배량 그룹 미존재 견적 대상 품목';
+                const selectionReason = isStandard ? '배량그룹 존재, 표준 단가 계약 품목' : '배량 그룹 미존재, 견적 대상 품목';
                 return `
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
