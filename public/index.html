@@ -1405,14 +1405,15 @@
             
             document.getElementById('s3_supplierList').innerHTML = filtered.map(pr => {
                 const orderDate = pr['최근발주일'] || '2025-12-15';  // Mock 발주일
+                const isMatched = pr['업체매칭여부'];
                 return `
-                <tr class="border-b hover:bg-gray-50 ${!pr['업체매칭여부'] ? 'bg-red-50' : ''}">
+                <tr class="border-b hover:bg-gray-50 ${!isMatched ? 'bg-red-50' : ''}">
                     <td class="px-2 py-2 text-xs">${pr['구매요청'] || '-'}</td>
                     <td class="px-2 py-2 text-xs text-gray-600">${pr['자재번호'] || '-'}</td>
                     <td class="px-2 py-2 text-xs truncate max-w-[100px]" title="${pr['내역'] || ''}">${(pr['내역'] || '-').substring(0, 12)}${(pr['내역']?.length > 12) ? '...' : ''}</td>
                     <td class="px-2 py-2 text-xs">${pr['매칭업체명'] || '<span class="text-red-500">신규필요</span>'}</td>
-                    <td class="px-2 py-2 text-xs text-center text-gray-500">${pr['업체매칭여부'] ? orderDate : '-'}</td>
-                    <td class="px-2 py-2 text-xs text-right">₩${(pr['최근발주단가'] || 0).toLocaleString()}</td>
+                    <td class="px-2 py-2 text-xs text-center text-gray-500">${isMatched ? orderDate : '-'}</td>
+                    <td class="px-2 py-2 text-xs text-right">${isMatched && pr['최근발주단가'] > 0 ? '₩' + pr['최근발주단가'].toLocaleString() : '-'}</td>
                 </tr>
             `}).join('');
         }
