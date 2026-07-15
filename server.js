@@ -230,7 +230,7 @@ async function callLLM(prompt, system = null) {
       },
       body: JSON.stringify({
         model: CONFIG.LLM_MODEL,
-        max_tokens: 1024,
+        max_tokens: 4096,
         messages: [{ role: 'user', content: prompt }],
         ...(system && { system })
       })
@@ -242,6 +242,10 @@ async function callLLM(prompt, system = null) {
     }
 
     const data = await response.json();
+    // 응답이 max_tokens 한도로 잘리면 JSON이 불완전해질 수 있으므로 경고
+    if (data.stop_reason === 'max_tokens') {
+      console.warn('LLM 응답이 max_tokens 한도로 잘렸습니다. max_tokens 상향이 필요할 수 있습니다.');
+    }
     return data.content?.[0]?.text || null;
   } catch (error) {
     console.error('LLM call error:', error);
