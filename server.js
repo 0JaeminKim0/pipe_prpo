@@ -161,7 +161,7 @@ const CONFIG = {
   URGENCY_NORMAL: 5,
   REASON_DESIGNATED: '지명경쟁_AC002_2. 계약의 성질 또는 목적에 비추어 특수한 설비/자재/물품 또는 실적이 있는 자가 아니면 계약의 목적을 달성하기 곤란한 경우로서 입찰대상자가 10인 이내인 경우',
   REASON_PRIVATE: '수의계약_SV023_2. 계약 목적의 특성 상 경쟁입찰에 부칠 수 없거나 경쟁입찰에 부칠 경우 현저하게 불리하다고 인정 되는 경우 및 경쟁입찰보다 수의계약을 체결하는 것이 계약목적 달성에 부합하는 것으로 판단되는 경우 등 수의계약에 의하는 것이 불가피하다고 인정될 때',
-  LLM_MODEL: 'claude-sonnet-4-20250514'
+  LLM_MODEL: 'claude-sonnet-4-6'
 };
 
 // Helper functions
@@ -251,18 +251,63 @@ async function callLLM(prompt, system = null) {
 
 function parseLLMJson(text) {
   if (!text) return {};
-  try {
-    const match = text.match(/```json\s*([\s\S]*?)\s*```/);
-    if (match) {
-      return JSON.parse(match[1]);
+
+  // JSON 문자열을 파싱 시도 (실패 시 trailing comma 등 정리 후 재시도)
+  const tryParse = (raw) => {
+    if (!raw) return null;
+    const candidate = raw.trim();
+    try {
+      return JSON.parse(candidate);
+    } catch (_) {
+      // 흔한 오류 정리: 객체/배열 끝의 trailing comma 제거
+      const cleaned = candidate.replace(/,\s*([}\]])/g, '$1');
+      try {
+        return JSON.parse(cleaned);
+      } catch (_) {
+        return null;
+      }
     }
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-  } catch (e) {
-    console.error('JSON parse error:', e);
+  };
+
+  // 1) ```json ... ``` 또는 ``` ... ``` 코드펜스 우선 처리
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fence) {
+    const parsed = tryParse(fence[1]);
+    if (parsed) return parsed;
   }
+
+  // 2) 첫 '{' 부터 중괄호 균형이 맞는 지점까지 추출 (greedy 매칭보다 안정적)
+  const start = text.indexOf('{');
+  if (start !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+      } else if (ch === '"') {
+        inString = true;
+      } else if (ch === '{') {
+        depth++;
+      } else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          const parsed = tryParse(text.slice(start, i + 1));
+          if (parsed) return parsed;
+          break;
+        }
+      }
+    }
+  }
+
+  // 3) 전체 텍스트 마지막 시도
+  const parsed = tryParse(text);
+  if (parsed) return parsed;
+
+  console.error('JSON parse error: LLM 응답에서 유효한 JSON을 찾지 못했습니다.\n원본 응답:', text);
   return {};
 }
 
